@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tampa Bay Child Welfare Journey Map — TBFCAA</title>
+<style>
+:root {
+  --navy:#1B3A5C; --teal:#2AB5C8; --teal-dark:#1E8A9A;
+  --child:#b7e0d5; --child-dark:#2a8a76; --child-light:#e8f7f4;
+  --foo:#f6957a; --foo-dark:#c04a2a; --foo-light:#fef0ec;
+  --village:#bbb2a7; --village-dark:#5a5048; --village-light:#f3f1ef;
+  --adopt:#C9A24B; --adopt-dark:#8A6A1E; --adopt-light:#f6efd9;
+  --bg:#F7F7F5; --white:#FFFFFF;
+  --gray-100:#F0F0EE; --gray-200:#E0E0DC; --gray-500:#888884; --gray-800:#2A2A28;
+  --shadow:0 4px 24px rgba(27,58,92,.12); --shadow-lg:0 8px 40px rgba(27,58,92,.18);
+  --radius:12px; --radius-sm:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--gray-800);min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;}
+
+/* LEGEND BAR */
+.legend-bar{background:white;border-bottom:1px solid var(--gray-200);padding:10px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;flex-shrink:0;}
+.map-heading{font-size:13px;font-weight:700;color:var(--navy);}
+.map-heading span{font-weight:400;color:var(--gray-500);font-size:12px;margin-left:6px;}
+.legend-items{display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;}
+.legend-line{width:28px;height:5px;border-radius:3px;flex-shrink:0;}
+.legend-transfer{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--gray-500);}
+.legend-transfer-icon{width:14px;height:14px;border-radius:50%;border:3px solid var(--gray-500);background:white;flex-shrink:0;}
+
+/* JOURNEY BUTTONS BAR */
+.journey-bar{background:var(--bg);border-bottom:1px solid var(--gray-200);padding:10px 32px;display:flex;align-items:center;justify-content:center;gap:14px;flex-shrink:0;}
+.journey-bar-label{font-size:11px;color:var(--gray-500);font-weight:600;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;}
+.journey-btn{display:flex;align-items:center;gap:7px;padding:8px 18px;border-radius:20px;border:2px solid transparent;cursor:pointer;font-size:12.5px;font-weight:700;transition:all .2s;letter-spacing:.1px;}
+.journey-btn:hover{transform:translateY(-1px);box-shadow:var(--shadow);}
+.journey-btn.child{background:var(--child-light);color:var(--child-dark);border-color:var(--child);}
+.journey-btn.child:hover{background:var(--child);color:white;border-color:var(--child-dark);}
+.journey-btn.foo{background:var(--foo-light);color:var(--foo-dark);border-color:var(--foo);}
+.journey-btn.foo:hover{background:var(--foo);color:white;border-color:var(--foo-dark);}
+.journey-btn.village{background:var(--village-light);color:var(--village-dark);border-color:var(--village);}
+.journey-btn.village:hover{background:var(--village);color:white;border-color:var(--village-dark);}
+.journey-btn.adopt{background:var(--adopt-light);color:var(--adopt-dark);border-color:var(--adopt);}
+.journey-btn.adopt:hover{background:var(--adopt);color:white;border-color:var(--adopt-dark);}
+
+/* MAP */
+.map-wrapper{flex:1;position:relative;overflow:hidden;background:var(--bg);min-height:480px;}
+.map-scroll{overflow-x:auto;overflow-y:hidden;height:100%;min-height:480px;cursor:grab;-webkit-overflow-scrolling:touch;}
+.map-scroll:active{cursor:grabbing;}
+.map-scroll::-webkit-scrollbar{height:6px;}
+.map-scroll::-webkit-scrollbar-track{background:var(--gray-100);}
+.map-scroll::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:3px;}
+#map-svg{display:block;min-width:1838px;height:600px;user-select:none;}
+.stop-group{cursor:pointer;}
+.stop-circle{transition:filter .15s;}
+.stop-group:hover .stop-circle{filter:brightness(.88);}
+.stop-label{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;pointer-events:none;}
+
+/* INFRA BADGE */
+.heading-col{display:flex;flex-direction:column;gap:6px;min-width:0;}
+.infra-badge{display:inline-flex;flex-direction:column;gap:1px;background:#f7f7f5;border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:5px 10px;font-size:10.5px;cursor:pointer;transition:all .2s;max-width:420px;align-self:flex-start;}
+.infra-badge:hover{border-color:var(--teal);background:white;}
+.infra-badge-title{font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:.7px;color:var(--teal-dark);}
+.infra-badge-body{color:var(--gray-500);line-height:1.35;}
+
+/* DRAWER */
+.drawer-overlay{position:fixed;inset:0;background:rgba(27,58,92,.25);z-index:200;opacity:0;pointer-events:none;transition:opacity .3s;}
+.drawer-overlay.open{opacity:1;pointer-events:all;}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(480px,92vw);background:white;z-index:201;transform:translateX(100%);transition:transform .35s cubic-bezier(.16,1,.3,1);display:flex;flex-direction:column;box-shadow:-8px 0 40px rgba(27,58,92,.15);}
+.drawer.open{transform:translateX(0);}
+.drawer-header{padding:20px 24px 16px;border-bottom:1px solid var(--gray-200);flex-shrink:0;position:relative;}
+.drawer-line-tag{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:3px 10px;border-radius:10px;margin-bottom:8px;color:white;}
+.drawer-stop-num{font-size:11px;color:var(--gray-500);margin-bottom:4px;font-weight:600;}
+.drawer-title{font-size:20px;font-weight:800;color:var(--navy);line-height:1.2;margin-bottom:6px;}
+.drawer-transfer-note{font-size:11px;color:var(--gray-500);display:flex;align-items:center;gap:6px;margin-top:4px;}
+.drawer-close{position:absolute;top:16px;right:16px;background:var(--gray-100);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--gray-800);transition:background .2s;}
+.drawer-close:hover{background:var(--gray-200);}
+.drawer-body{flex:1;overflow-y:auto;padding:20px 24px;-webkit-overflow-scrolling:touch;}
+.drawer-body::-webkit-scrollbar{width:4px;}
+.drawer-body::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:2px;}
+.content-section{margin-bottom:18px;}
+.section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.section-body{font-size:13.5px;line-height:1.6;color:var(--gray-800);}
+.voice-block{background:var(--gray-100);border-left:3px solid var(--teal);padding:10px 14px;border-radius:0 var(--radius-sm) var(--radius-sm) 0;font-style:italic;font-size:13px;line-height:1.6;color:#444;}
+.terms-list{list-style:none;}
+.terms-list li{padding:6px 0;border-bottom:1px solid var(--gray-100);font-size:13px;line-height:1.5;}
+.terms-list li:last-child{border-bottom:none;}
+.terms-list li strong{color:var(--navy);font-weight:700;}
+.tips-list{list-style:none;}
+.tips-list li{padding:5px 0 5px 18px;font-size:13px;line-height:1.5;position:relative;}
+.tips-list li::before{content:'→';position:absolute;left:0;color:var(--teal);font-weight:700;}
+.room-list{list-style:none;}
+.room-list li{padding:5px 0;font-size:13px;line-height:1.5;}
+.room-list li strong{color:var(--navy);}
+.org-list{list-style:none;}
+.org-list li{padding:5px 0;font-size:12.5px;line-height:1.4;border-bottom:1px solid var(--gray-100);display:flex;gap:8px;align-items:baseline;}
+.org-list li:last-child{border-bottom:none;}
+.org-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.org-name{font-weight:600;color:var(--navy);}
+.org-name a{color:var(--navy);text-decoration:none;border-bottom:1px solid rgba(27,58,92,.28);transition:color .15s,border-color .15s;}
+.org-name a:hover{color:var(--teal-dark);border-bottom-color:var(--teal);}
+.org-name a::after{content:'\2197';font-size:9px;margin-left:2px;opacity:.5;}
+.terminus-card-orgs a{color:#555;text-decoration:none;border-bottom:1px solid rgba(0,0,0,.18);}
+.terminus-card-orgs a:hover{color:var(--teal-dark);border-bottom-color:var(--teal);}
+.org-note{color:var(--gray-500);font-size:11.5px;display:block;}
+.terminus-cards{display:flex;flex-direction:column;gap:10px;margin-top:8px;}
+.terminus-card{border-radius:var(--radius-sm);padding:12px 14px;border-left:4px solid;}
+.terminus-card-title{font-weight:700;font-size:13px;margin-bottom:4px;}
+.terminus-card-body{font-size:12.5px;line-height:1.5;color:#444;}
+.expand-btn{background:none;border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:7px 14px;font-size:12px;color:var(--teal-dark);font-weight:600;cursor:pointer;width:100%;margin-top:8px;transition:all .2s;}
+.expand-btn:hover{background:var(--gray-100);border-color:var(--teal);}
+.collapsible{display:none;}
+.collapsible.open{display:block;}
+
+/* JOURNEY OVERLAY */
+.journey-overlay{position:fixed;inset:0;background:white;z-index:300;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .4s cubic-bezier(.16,1,.3,1);}
+.journey-overlay.open{transform:translateY(0);}
+.journey-header{padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--gray-200);flex-shrink:0;}
+.journey-header-left{display:flex;align-items:center;gap:14px;}
+.journey-line-badge{padding:5px 14px;border-radius:20px;color:white;font-weight:800;font-size:13px;}
+.journey-title{font-size:16px;font-weight:700;color:var(--navy);}
+.journey-subtitle{font-size:12px;color:var(--gray-500);}
+.journey-close{background:var(--gray-100);border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;color:var(--gray-800);transition:background .2s;flex-shrink:0;}
+.journey-close:hover{background:var(--gray-200);}
+.journey-body{flex:1;display:flex;overflow:hidden;}
+.journey-rail{width:220px;flex-shrink:0;border-right:1px solid var(--gray-200);overflow-y:auto;padding:16px 0;background:var(--gray-100);}
+.journey-rail::-webkit-scrollbar{width:4px;}
+.journey-rail::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:2px;}
+.rail-stop{display:flex;align-items:flex-start;gap:10px;padding:9px 16px;cursor:pointer;transition:all .15s;}
+.rail-stop:hover{background:var(--gray-200);}
+.rail-stop.active{background:white;border-right:3px solid var(--teal);}
+.rail-stop-num{font-size:10px;font-weight:700;color:var(--gray-500);min-width:18px;margin-top:2px;text-align:right;}
+.rail-stop-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px;border:2px solid rgba(0,0,0,.1);}
+.rail-stop-dot.transfer{border-width:3px;background:white!important;}
+.rail-stop-name{font-size:12px;line-height:1.3;color:var(--gray-800);font-weight:500;}
+.rail-stop.active .rail-stop-name{font-weight:700;color:var(--navy);}
+.rail-section-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--gray-500);padding:12px 16px 4px;}
+.journey-content{flex:1;overflow-y:auto;padding:28px 36px;max-width:720px;}
+.journey-content::-webkit-scrollbar{width:6px;}
+.journey-content::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:3px;}
+.journey-stop-num{font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.journey-stop-title{font-size:26px;font-weight:800;color:var(--navy);line-height:1.15;margin-bottom:6px;}
+.journey-transfer-badge{display:inline-flex;align-items:center;gap:6px;background:#FFF3F0;color:#C0392B;font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:20px;}
+.journey-divider{border:none;border-top:1px solid var(--gray-200);margin:20px 0;}
+.journey-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--teal-dark);margin-bottom:8px;margin-top:20px;}
+.journey-description{font-size:15px;line-height:1.7;color:var(--gray-800);margin-bottom:16px;}
+.journey-voice{background:var(--gray-100);border-left:4px solid var(--teal);padding:14px 18px;border-radius:0 var(--radius-sm) var(--radius-sm) 0;font-style:italic;font-size:14px;line-height:1.65;color:#444;margin-bottom:20px;}
+.journey-nav{display:flex;justify-content:space-between;gap:12px;margin-top:32px;padding-top:20px;border-top:1px solid var(--gray-200);}
+.nav-btn{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--radius-sm);border:1.5px solid var(--gray-200);background:white;cursor:pointer;font-size:13px;font-weight:600;color:var(--navy);transition:all .2s;}
+.nav-btn:hover{border-color:var(--teal);color:var(--teal-dark);}
+.nav-btn.primary{background:var(--navy);color:white;border-color:var(--navy);}
+.nav-btn.primary:hover{background:var(--teal-dark);border-color:var(--teal-dark);}
+.nav-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(27,58,92,.4);z-index:400;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .25s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:white;border-radius:var(--radius);padding:28px;max-width:540px;width:100%;box-shadow:var(--shadow-lg);position:relative;max-height:80vh;overflow-y:auto;}
+.modal-close{position:absolute;top:16px;right:16px;background:var(--gray-100);border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.modal-title{font-size:18px;font-weight:800;color:var(--navy);margin-bottom:16px;padding-right:32px;}
+.infra-org{background:var(--gray-100);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:12px;}
+.infra-org-name{font-weight:700;font-size:14px;color:var(--navy);margin-bottom:4px;}
+.infra-org-tag{display:inline-block;background:var(--teal);color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;margin-bottom:6px;}
+.infra-org-desc{font-size:12.5px;color:var(--gray-500);line-height:1.5;}
+
+/* TOOLTIP */
+.stop-tooltip{position:fixed;background:var(--navy);color:white;padding:5px 11px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;pointer-events:none;z-index:500;white-space:nowrap;opacity:0;transition:opacity .15s;box-shadow:var(--shadow);}
+.stop-tooltip.visible{opacity:1;}
+@media(max-width:768px){.legend-bar,.journey-bar{padding:10px 16px;}.journey-content{padding:20px;}.journey-rail{width:180px;}.journey-stop-title{font-size:20px;}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important;}}
+
+/* ===== SEARCH ===== */
+.search-wrap{position:relative;flex:0 1 300px;min-width:200px;margin-left:auto;}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--gray-100,#F2F2F0);border:1.5px solid var(--gray-200);border-radius:22px;padding:7px 14px;transition:border-color .15s,box-shadow .15s;}
+.search-box:focus-within{border-color:var(--teal-dark);box-shadow:0 0 0 3px rgba(30,138,154,.13);background:white;}
+.search-box svg{width:15px;height:15px;flex:none;color:var(--gray-500);}
+.search-box input{border:none;background:none;outline:none;font-size:13.5px;color:var(--navy);width:100%;font-family:inherit;}
+.search-box input::placeholder{color:var(--gray-500);}
+.search-clear{border:none;background:none;cursor:pointer;color:var(--gray-500);font-size:16px;line-height:1;padding:0 2px;display:none;flex:none;}
+.search-clear:hover{color:var(--navy);}
+.search-results{position:absolute;top:calc(100% + 6px);left:0;right:0;background:white;border:1px solid var(--gray-200);border-radius:12px;box-shadow:0 14px 40px -12px rgba(27,58,92,.28);max-height:60vh;overflow-y:auto;z-index:60;display:none;padding:6px;}
+.search-results.open{display:block;}
+.search-result{padding:9px 12px;border-radius:8px;cursor:pointer;display:block;border:none;background:none;width:100%;text-align:left;font-family:inherit;}
+.search-result:hover,.search-result.active{background:var(--gray-100,#F4F4F2);}
+.search-result .sr-title{font-size:13.5px;font-weight:600;color:var(--navy);display:flex;align-items:center;gap:7px;}
+.search-result .sr-dot{width:9px;height:9px;border-radius:50%;flex:none;}
+.search-result .sr-why{font-size:11.5px;color:var(--gray-500);margin-top:2px;}
+.search-result .sr-why b{color:var(--teal-dark);font-weight:600;}
+.search-empty{padding:16px 14px;font-size:13px;color:var(--gray-500);text-align:center;}
+.search-hint{padding:7px 12px 9px;font-size:11px;color:var(--gray-500);border-top:1px solid var(--gray-100,#eee);margin-top:4px;}
+@media(max-width:720px){.search-wrap{flex-basis:100%;order:3;margin-left:0;}}
+
+
+/* ── FORK CHOICE (FoO diversion) ── */
+.fork-choice{margin:18px 0 6px;padding:16px;background:#fdf2ee;border:1px solid #f7b8a6;border-radius:12px;}
+.fork-choice-label{font-size:13px;font-weight:700;color:var(--foo-dark);margin-bottom:12px;}
+.fork-btn{display:block;width:100%;text-align:left;border:2px solid #f7b8a6;background:white;border-radius:10px;padding:12px 14px;margin-bottom:10px;cursor:pointer;font-size:14px;font-weight:700;color:var(--foo-dark);transition:all .15s;font-family:inherit;}
+.fork-btn:last-child{margin-bottom:0;}
+.fork-btn:hover{background:var(--foo-dark);color:white;border-color:var(--foo-dark);}
+.fork-btn span{display:block;font-weight:400;font-size:12px;opacity:.75;margin-top:3px;}
+.fork-btn.stay{border-color:#f7b8a6;}
+.fork-btn.remove{border-color:var(--foo);}
+
+</style>
+</head>
+<body>
+
+<!-- LEGEND BAR -->
+<div class="legend-bar">
+  <div class="heading-col">
+    <div class="map-heading">Child Welfare Journey Map <span>Hillsborough · Pinellas · Pasco</span></div>
+    <div class="infra-badge" onclick="openInfraModal()">
+      <span class="infra-badge-title">⚙ System Infrastructure</span>
+      <span class="infra-badge-body">CNHC &amp; Family Support Services oversee all tri-county cases. <span style="color:var(--teal-dark);font-weight:600">Learn more →</span></span>
+    </div>
+  </div>
+  <div class="legend-items">
+    <div class="legend-item" style="color:var(--village-dark)"><div class="legend-line" style="background:var(--village)"></div>Foster Family</div>
+    <div class="legend-item" style="color:var(--child-dark)"><div class="legend-line" style="background:var(--child)"></div>The Child</div>
+    <div class="legend-item" style="color:var(--foo-dark)"><div class="legend-line" style="background:var(--foo)"></div>Family of Origin</div>
+      <div class="legend-item" style="color:var(--foo-dark)"><div class="legend-line" style="background:#f7b8a6"></div>A Different Path</div>
+    <div class="legend-item" style="color:var(--adopt-dark)"><div class="legend-line" style="background:var(--adopt)"></div>Adoption</div>
+    <div class="legend-transfer"><div class="legend-transfer-icon"></div>Transfer Station</div>
+  </div>
+  <div class="search-wrap">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input id="searchInput" type="text" placeholder="Search stops, terms, organizations…" autocomplete="off" aria-label="Search the journey map">
+      <button class="search-clear" id="searchClear" aria-label="Clear search">&times;</button>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+
+<!-- JOURNEY BUTTONS BAR -->
+<div class="journey-bar">
+  <span class="journey-bar-label">Follow a journey →</span>
+  <button class="journey-btn village" onclick="enterJourney('village')">Foster Family</button>
+  <button class="journey-btn child" onclick="enterJourney('child')">The Child</button>
+  <button class="journey-btn foo" onclick="enterJourney('foo')">Family of Origin</button>
+  <button class="journey-btn adopt" onclick="enterJourney('adopt')">Adoption</button>
+</div>
+
+<!-- MAP -->
+<div class="map-wrapper">
+  <div class="map-scroll" id="mapScroll">
+    <svg id="map-svg" viewBox="-98 0 1838 600" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+          <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#E8E8E6" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect x="-98" width="1838" height="600" fill="#F7F7F5"/>
+      <rect x="-98" width="1838" height="600" fill="url(#grid)" opacity="0.5"/>
+
+      <!-- Section labels -->
+      <text x="34" y="26" class="stop-label" font-size="9" fill="#bbb" font-weight="700" letter-spacing="1.2">THE FOSTER FAMILY PREPARES</text>
+      <line x1="32" y1="31" x2="492" y2="31" stroke="#e0e0dc" stroke-width="1"/>
+      <text x="532" y="26" class="stop-label" font-size="9" fill="#bbb" font-weight="700" letter-spacing="1.2">JOURNEYS BEGIN</text>
+      <line x1="530" y1="31" x2="1050" y2="31" stroke="#e0e0dc" stroke-width="1"/>
+      <text x="1090" y="26" class="stop-label" font-size="9" fill="#bbb" font-weight="700" letter-spacing="1.2">CHECKPOINTS</text>
+      <line x1="1088" y1="31" x2="1410" y2="31" stroke="#e0e0dc" stroke-width="1"/>
+      <text x="1450" y="26" class="stop-label" font-size="9" fill="#bbb" font-weight="700" letter-spacing="1.2">DESTINATIONS</text>
+      <line x1="1448" y1="31" x2="1710" y2="31" stroke="#e0e0dc" stroke-width="1"/>
+
+      <!-- Line name labels -->
+      <text x="24" y="114" class="stop-label" font-size="10" fill="#8a8178" font-weight="800" text-anchor="end">FOSTER FAMILY</text>
+      <text x="465" y="279" class="stop-label" font-size="10" fill="#2a8a76" font-weight="800" text-anchor="end">THE CHILD</text>
+      <text x="465" y="394" class="stop-label" font-size="10" fill="#c04a2a" font-weight="800" text-anchor="end">FAMILY OF ORIGIN</text>
+
+      <!-- ═══ TRACK LAYERS ═══ -->
+      <!-- Village: y=110 pre-system, curves to y=165 at x=510, then y=165 throughout -->
+      <!-- Draw village first (bottom layer) -->
+      <path fill="none" stroke="#bbb2a7" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"
+        d="M 32,110 L 448,110 C 474,110 464,165 490,165 L 1410,165"/>
+
+      <!-- FoO: y=390 — draw second -->
+      <path fill="none" stroke="#f6957a" stroke-width="7" stroke-linecap="round"
+        d="M 475,390 L 1410,390"/>
+
+      <!-- Child: y=275 — draw last (on top) so it bridges over village curve -->
+      <path fill="none" stroke="#b7e0d5" stroke-width="7" stroke-linecap="round"
+        d="M 475,275 L 1410,275"/>
+
+      <!-- Bridge: white gap on child where village curve passes near it, then redraw child on top -->
+      <line x1="504" y1="275" x2="528" y2="275" stroke="white" stroke-width="13"/>
+      <line x1="504" y1="275" x2="528" y2="275" stroke="#b7e0d5" stroke-width="7"/>
+
+      <!-- Terminus tracks -->
+      <line x1="1410" y1="165" x2="1590" y2="165" stroke="#bbb2a7" stroke-width="5" stroke-linecap="round"/>
+      <line x1="1410" y1="275" x2="1590" y2="275" stroke="#b7e0d5" stroke-width="5" stroke-linecap="round"/>
+      <line x1="1410" y1="390" x2="1590" y2="390" stroke="#f6957a" stroke-width="5" stroke-linecap="round"/>
+
+      <!-- ═══ TERMINUS CIRCLES ═══ -->
+      <g class="stop-group" data-stop="term_village" onclick="openStop('term_village')">
+        <circle class="stop-circle" cx="1590" cy="165" r="13" fill="#bbb2a7" stroke="white" stroke-width="3"/>
+        <text x="1590" y="188" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="700">The Road Ahead</text>
+      </g>
+      <g class="stop-group" data-stop="term_child" onclick="openStop('term_child')">
+        <circle class="stop-circle" cx="1590" cy="275" r="13" fill="#b7e0d5" stroke="white" stroke-width="3"/>
+        <text x="1590" y="298" class="stop-label" font-size="9.5" fill="#2a8a76" text-anchor="middle" font-weight="700">The Road Ahead</text>
+      </g>
+      <g class="stop-group" data-stop="term_foo" onclick="openStop('term_foo')">
+        <circle class="stop-circle" cx="1590" cy="390" r="13" fill="#f6957a" stroke="white" stroke-width="3"/>
+        <text x="1590" y="413" class="stop-label" font-size="9.5" fill="#c04a2a" text-anchor="middle" font-weight="700">The Road Ahead</text>
+      </g>
+
+      <!-- ═══ VILLAGE PRE-SYSTEM STOPS ═══ -->
+      <g class="stop-group" data-stop="v1" onclick="openStop('v1')">
+        <circle class="stop-circle" cx="60" cy="110" r="11" fill="#bbb2a7" stroke="white" stroke-width="3"/>
+        <text x="60" y="81" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">Something</text>
+        <text x="60" y="92" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">Stirs</text>
+      </g>
+      <g class="stop-group" data-stop="v2" onclick="openStop('v2')">
+        <circle class="stop-circle" cx="140" cy="110" r="11" fill="#bbb2a7" stroke="#C9A24B" stroke-width="3"/>
+        <text x="140" y="92" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">Info Session</text>
+      </g>
+      <g class="stop-group" data-stop="v3" onclick="openStop('v3')">
+        <circle class="stop-circle" cx="220" cy="110" r="11" fill="#bbb2a7" stroke="white" stroke-width="3"/>
+        <text x="220" y="81" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">Pre-Service</text>
+        <text x="220" y="92" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">Training</text>
+      </g>
+      <g class="stop-group" data-stop="v4" onclick="openStop('v4')">
+        <circle class="stop-circle" cx="300" cy="110" r="11" fill="#bbb2a7" stroke="white" stroke-width="3"/>
+        <text x="300" y="81" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">Home</text>
+        <text x="300" y="92" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">Study</text>
+      </g>
+      <g class="stop-group" data-stop="v5" onclick="openStop('v5')">
+        <circle class="stop-circle" cx="372" cy="110" r="11" fill="#bbb2a7" stroke="white" stroke-width="3"/>
+        <text x="372" y="92" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">Licensed</text>
+      </g>
+      <g class="stop-group" data-stop="v6" onclick="openStop('v6')">
+        <circle class="stop-circle" cx="436" cy="110" r="11" fill="#bbb2a7" stroke="white" stroke-width="3"/>
+        <text x="436" y="81" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">Ready &amp;</text>
+        <text x="436" y="92" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">Waiting</text>
+      </g>
+
+      <!-- ═══ TRANSFER 1: The Report / The Call — x=530 ═══ -->
+      <g class="stop-group" data-stop="t1" onclick="openStop('t1')">
+        <circle cx="530" cy="165" r="15" fill="white" stroke="#bbb2a7" stroke-width="4.5"/>
+        <circle cx="530" cy="165" r="7" fill="#bbb2a7"/>
+        <circle cx="530" cy="275" r="15" fill="white" stroke="#b7e0d5" stroke-width="4.5"/>
+        <circle cx="530" cy="275" r="7" fill="#b7e0d5"/>
+        <circle cx="530" cy="390" r="15" fill="white" stroke="#f6957a" stroke-width="4.5"/>
+        <circle cx="530" cy="390" r="7" fill="#f6957a"/>
+        <line x1="530" y1="180" x2="530" y2="260" stroke="#ccc" stroke-width="2" stroke-dasharray="5,3"/>
+        <line x1="530" y1="290" x2="530" y2="375" stroke="#ccc" stroke-width="2" stroke-dasharray="5,3"/>
+        <text x="530" y="136" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">The Report /</text>
+        <text x="530" y="147" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">The Call</text>
+      </g>
+
+      <!-- ═══ VILLAGE POST-PLACEMENT ═══ -->
+      <g class="stop-group" data-stop="v7" onclick="openStop('v7')">
+        <circle class="stop-circle" cx="728" cy="165" r="11" fill="#bbb2a7" stroke="white" stroke-width="3"/>
+        <text x="728" y="137" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">A Child</text>
+        <text x="728" y="148" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">Arrives</text>
+      </g>
+
+      <!-- ═══ TRANSFER 2: Courtroom — x=730 ═══ -->
+      <g class="stop-group" data-stop="t2" onclick="openStop('t2')">
+        <circle cx="830" cy="165" r="15" fill="white" stroke="#bbb2a7" stroke-width="4.5"/>
+        <circle cx="830" cy="165" r="7" fill="#bbb2a7"/>
+        <circle cx="830" cy="275" r="15" fill="white" stroke="#b7e0d5" stroke-width="4.5"/>
+        <circle cx="830" cy="275" r="7" fill="#b7e0d5"/>
+        <circle cx="830" cy="390" r="15" fill="white" stroke="#f6957a" stroke-width="4.5"/>
+        <circle cx="830" cy="390" r="7" fill="#f6957a"/>
+        <line x1="830" y1="180" x2="830" y2="260" stroke="#ccc" stroke-width="2" stroke-dasharray="5,3"/>
+        <line x1="830" y1="290" x2="830" y2="375" stroke="#ccc" stroke-width="2" stroke-dasharray="5,3"/>
+        <text x="830" y="136" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">The</text>
+        <text x="830" y="147" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">Courtroom</text>
+      </g>
+
+      <!-- ═══ CHILD STOPS ═══ -->
+      <g class="stop-group" data-stop="c1" onclick="openStop('c1')">
+        <circle class="stop-circle" cx="728" cy="275" r="11" fill="#b7e0d5" stroke="white" stroke-width="3"/>
+        <text x="728" y="297" class="stop-label" font-size="9.5" fill="#2a8a76" text-anchor="middle" font-weight="600">A Knock at</text>
+        <text x="728" y="308" class="stop-label" font-size="9.5" fill="#2a8a76" text-anchor="middle" font-weight="600">the Door</text>
+      </g>
+
+      <!-- ═══ VILLAGE: Building a Team — x=828 ═══ -->
+      <g class="stop-group" data-stop="v8" onclick="openStop('v8')">
+        <circle class="stop-circle" cx="928" cy="165" r="11" fill="#bbb2a7" stroke="white" stroke-width="3"/>
+        <text x="928" y="137" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">Building</text>
+        <text x="928" y="148" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">a Team</text>
+      </g>
+
+      <!-- ═══ TRANSFER 3: New Place to Sleep — x=930 (Village+Child) ═══ -->
+      <g class="stop-group" data-stop="t3" onclick="openStop('t3')">
+        <circle cx="1030" cy="165" r="15" fill="white" stroke="#bbb2a7" stroke-width="4.5"/>
+        <circle cx="1030" cy="165" r="7" fill="#bbb2a7"/>
+        <circle cx="1030" cy="275" r="15" fill="white" stroke="#b7e0d5" stroke-width="4.5"/>
+        <circle cx="1030" cy="275" r="7" fill="#b7e0d5"/>
+        <line x1="1030" y1="180" x2="1030" y2="260" stroke="#ccc" stroke-width="2" stroke-dasharray="5,3"/>
+        <text x="1030" y="136" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">New Place</text>
+        <text x="1030" y="147" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">to Sleep</text>
+      </g>
+
+      <!-- ═══ FoO STOPS ═══ -->
+      <!-- ═══ DIVERSION BRANCH ═══ -->
+      <path fill="none" stroke="#f7b8a6" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"
+            d="M 629,390 L 629,450 Q 629,480 658,480 L 1149,480"/>
+      <!-- junction stop on FoO line -->
+      <g class="stop-group" data-stop="d0" onclick="openStop('d0')">
+        <circle class="stop-circle" cx="629" cy="390" r="11" fill="#f7b8a6" stroke="white" stroke-width="3"/>
+        <text x="629" y="368" class="stop-label" font-size="9.5" fill="#c04a2a" text-anchor="middle" font-weight="600">A Different Path</text>
+      </g>
+      <!-- 3 placeholder branch stops -->
+      <g class="stop-group" data-stop="d1" onclick="openStop('d1')">
+        <circle class="stop-circle" cx="729" cy="480" r="11" fill="#f7b8a6" stroke="white" stroke-width="3"/>
+        <text x="729" y="502" class="stop-label" font-size="9.5" fill="#c04a2a" text-anchor="middle" font-weight="600">A Plan to</text>
+        <text x="729" y="513" class="stop-label" font-size="9.5" fill="#c04a2a" text-anchor="middle" font-weight="600">Stay Together</text>
+      </g>
+      <g class="stop-group" data-stop="d2" onclick="openStop('d2')">
+        <circle class="stop-circle" cx="869" cy="480" r="11" fill="#f7b8a6" stroke="white" stroke-width="3"/>
+        <text x="869" y="502" class="stop-label" font-size="9.5" fill="#c04a2a" text-anchor="middle" font-weight="600">Getting Support</text>
+      </g>
+      <g class="stop-group" data-stop="d3" onclick="openStop('d3')">
+        <circle class="stop-circle" cx="1009" cy="480" r="11" fill="#f7b8a6" stroke="white" stroke-width="3"/>
+        <text x="1009" y="502" class="stop-label" font-size="9.5" fill="#c04a2a" text-anchor="middle" font-weight="600">Checking In,</text>
+        <text x="1009" y="513" class="stop-label" font-size="9.5" fill="#c04a2a" text-anchor="middle" font-weight="600">Holding Steady</text>
+      </g>
+      <g class="stop-group" data-stop="d4" onclick="openStop('d4')">
+        <circle class="stop-circle" cx="1149" cy="480" r="11" fill="#f7b8a6" stroke="white" stroke-width="3"/>
+        <text x="1149" y="502" class="stop-label" font-size="9.5" fill="#c04a2a" text-anchor="middle" font-weight="600">Home, With Help</text>
+      </g>
+      <g class="stop-group" data-stop="f1" onclick="openStop('f1')">
+        <circle class="stop-circle" cx="728" cy="390" r="11" fill="#f6957a" stroke="white" stroke-width="3"/>
+        <text x="728" y="412" class="stop-label" font-size="9.5" fill="#c04a2a" text-anchor="middle" font-weight="600">Separated</text>
+      </g>
+      <g class="stop-group" data-stop="f2" onclick="openStop('f2')">
+        <circle class="stop-circle" cx="928" cy="390" r="11" fill="#f6957a" stroke="white" stroke-width="3"/>
+        <text x="928" y="412" class="stop-label" font-size="9.5" fill="#c04a2a" text-anchor="middle" font-weight="600">Given a</text>
+        <text x="928" y="423" class="stop-label" font-size="9.5" fill="#c04a2a" text-anchor="middle" font-weight="600">Roadmap</text>
+      </g>
+
+      <!-- ═══ Child: Case Manager — x=1030 ═══ -->
+      <g class="stop-group" data-stop="c3" onclick="openStop('c3')">
+        <circle class="stop-circle" cx="1130" cy="275" r="11" fill="#b7e0d5" stroke="white" stroke-width="3"/>
+        <text x="1130" y="297" class="stop-label" font-size="9.5" fill="#2a8a76" text-anchor="middle" font-weight="600">My Case</text>
+        <text x="1130" y="308" class="stop-label" font-size="9.5" fill="#2a8a76" text-anchor="middle" font-weight="600">Manager</text>
+      </g>
+
+      <!-- Village: Pivot Point — x=1030 -->
+      <g class="stop-group" data-stop="v9" onclick="openStop('v9')">
+        <circle class="stop-circle" cx="1130" cy="165" r="11" fill="#bbb2a7" stroke="white" stroke-width="3"/>
+        <text x="1130" y="137" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">The Pivot</text>
+        <text x="1130" y="148" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">Point</text>
+      </g>
+
+      <!-- FoO: Services Begin — x=1030 -->
+      <g class="stop-group" data-stop="f3" onclick="openStop('f3')">
+        <circle class="stop-circle" cx="1130" cy="390" r="11" fill="#f6957a" stroke="white" stroke-width="3"/>
+        <text x="1130" y="412" class="stop-label" font-size="9.5" fill="#c04a2a" text-anchor="middle" font-weight="600">Services</text>
+        <text x="1130" y="423" class="stop-label" font-size="9.5" fill="#c04a2a" text-anchor="middle" font-weight="600">Begin</text>
+      </g>
+
+      <!-- Child: My Team & Visits — x=1130 -->
+      <g class="stop-group" data-stop="c4" onclick="openStop('c4')">
+        <circle class="stop-circle" cx="1230" cy="275" r="11" fill="#b7e0d5" stroke="white" stroke-width="3"/>
+        <text x="1230" y="297" class="stop-label" font-size="9.5" fill="#2a8a76" text-anchor="middle" font-weight="600">My Team</text>
+        <text x="1230" y="308" class="stop-label" font-size="9.5" fill="#2a8a76" text-anchor="middle" font-weight="600">&amp; Visits</text>
+      </g>
+
+      <!-- FoO: Visitation — x=1130 -->
+      <g class="stop-group" data-stop="f4" onclick="openStop('f4')">
+        <circle class="stop-circle" cx="1230" cy="390" r="11" fill="#f6957a" stroke="white" stroke-width="3"/>
+        <text x="1230" y="412" class="stop-label" font-size="9.5" fill="#c04a2a" text-anchor="middle" font-weight="600">Visitation</text>
+      </g>
+
+      <!-- ═══ TRANSFER 4: Back to Court 6mo — x=1210 ═══ -->
+      <g class="stop-group" data-stop="t4" onclick="openStop('t4')">
+        <circle cx="1310" cy="165" r="15" fill="white" stroke="#bbb2a7" stroke-width="4.5"/>
+        <circle cx="1310" cy="165" r="7" fill="#bbb2a7"/>
+        <circle cx="1310" cy="275" r="15" fill="white" stroke="#b7e0d5" stroke-width="4.5"/>
+        <circle cx="1310" cy="275" r="7" fill="#b7e0d5"/>
+        <circle cx="1310" cy="390" r="15" fill="white" stroke="#f6957a" stroke-width="4.5"/>
+        <circle cx="1310" cy="390" r="7" fill="#f6957a"/>
+        <line x1="1310" y1="180" x2="1310" y2="260" stroke="#ccc" stroke-width="2" stroke-dasharray="5,3"/>
+        <line x1="1310" y1="290" x2="1310" y2="375" stroke="#ccc" stroke-width="2" stroke-dasharray="5,3"/>
+        <text x="1310" y="136" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">Back to Court</text>
+        <text x="1310" y="147" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="600">(6 months)</text>
+      </g>
+
+      <!-- ═══ TRANSFER 5: Permanency Hearing — x=1310 ═══ -->
+      <g class="stop-group" data-stop="t5" onclick="openStop('t5')">
+        <circle cx="1410" cy="165" r="17" fill="white" stroke="#bbb2a7" stroke-width="5"/>
+        <circle cx="1410" cy="165" r="8" fill="#bbb2a7"/>
+        <circle cx="1410" cy="275" r="17" fill="white" stroke="#b7e0d5" stroke-width="5"/>
+        <circle cx="1410" cy="275" r="8" fill="#b7e0d5"/>
+        <circle cx="1410" cy="390" r="17" fill="white" stroke="#f6957a" stroke-width="5"/>
+        <circle cx="1410" cy="390" r="8" fill="#f6957a"/>
+        <line x1="1410" y1="182" x2="1410" y2="258" stroke="#ccc" stroke-width="2" stroke-dasharray="5,3"/>
+        <line x1="1410" y1="292" x2="1410" y2="373" stroke="#ccc" stroke-width="2" stroke-dasharray="5,3"/>
+        <text x="1410" y="131" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="700">★ Permanency</text>
+        <text x="1410" y="143" class="stop-label" font-size="9.5" fill="#8a8178" text-anchor="middle" font-weight="700">Hearing (12 mo.)</text>
+      </g>
+
+      <!-- ═══ ADOPTION LINE — vertical from Info Session flares with rounded shoulders into a bottom bar: short LEFT tail (label) + RIGHT run to the stops ═══ -->
+      <path fill="none" stroke="#C9A24B" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"
+            d="M 92,545 L 1590,545"/>
+      <path fill="none" stroke="#C9A24B" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"
+            d="M 170,545 Q 140,545 140,515 L 140,123 M 140,515 Q 140,545 110,545"/>
+      <text x="84" y="549" class="stop-label" font-size="10" fill="#8A6A1E" font-weight="800" text-anchor="end">ADOPTION</text>
+
+      <g class="stop-group" data-stop="a1" onclick="openStop('a1')">
+        <circle class="stop-circle" cx="260" cy="545" r="11" fill="#C9A24B" stroke="white" stroke-width="3"/>
+        <text x="260" y="567" class="stop-label" font-size="9.5" fill="#8A6A1E" text-anchor="middle" font-weight="600">Choosing</text>
+        <text x="260" y="578" class="stop-label" font-size="9.5" fill="#8A6A1E" text-anchor="middle" font-weight="600">Adoption</text>
+      </g>
+      <g class="stop-group" data-stop="a2" onclick="openStop('a2')">
+        <circle class="stop-circle" cx="450" cy="545" r="11" fill="#C9A24B" stroke="white" stroke-width="3"/>
+        <text x="450" y="567" class="stop-label" font-size="9.5" fill="#8A6A1E" text-anchor="middle" font-weight="600">Approved</text>
+        <text x="450" y="578" class="stop-label" font-size="9.5" fill="#8A6A1E" text-anchor="middle" font-weight="600">to Adopt</text>
+      </g>
+      <g class="stop-group" data-stop="a3" onclick="openStop('a3')">
+        <circle class="stop-circle" cx="640" cy="545" r="11" fill="#C9A24B" stroke="white" stroke-width="3"/>
+        <text x="640" y="567" class="stop-label" font-size="9.5" fill="#8A6A1E" text-anchor="middle" font-weight="600">The Match</text>
+      </g>
+      <g class="stop-group" data-stop="a4" onclick="openStop('a4')">
+        <circle class="stop-circle" cx="830" cy="545" r="11" fill="#C9A24B" stroke="white" stroke-width="3"/>
+        <text x="830" y="567" class="stop-label" font-size="9.5" fill="#8A6A1E" text-anchor="middle" font-weight="600">Getting to Know</text>
+        <text x="830" y="578" class="stop-label" font-size="9.5" fill="#8A6A1E" text-anchor="middle" font-weight="600">Each Other</text>
+      </g>
+      <g class="stop-group" data-stop="a5" onclick="openStop('a5')">
+        <circle class="stop-circle" cx="1020" cy="545" r="11" fill="#C9A24B" stroke="white" stroke-width="3"/>
+        <text x="1020" y="567" class="stop-label" font-size="9.5" fill="#8A6A1E" text-anchor="middle" font-weight="600">Placement</text>
+      </g>
+      <g class="stop-group" data-stop="a6" onclick="openStop('a6')">
+        <circle class="stop-circle" cx="1210" cy="545" r="11" fill="#C9A24B" stroke="white" stroke-width="3"/>
+        <text x="1210" y="567" class="stop-label" font-size="9.5" fill="#8A6A1E" text-anchor="middle" font-weight="600">Supervised</text>
+        <text x="1210" y="578" class="stop-label" font-size="9.5" fill="#8A6A1E" text-anchor="middle" font-weight="600">Placement</text>
+      </g>
+      <g class="stop-group" data-stop="a7" onclick="openStop('a7')">
+        <circle class="stop-circle" cx="1400" cy="545" r="11" fill="#C9A24B" stroke="white" stroke-width="3"/>
+        <text x="1400" y="567" class="stop-label" font-size="9.5" fill="#8A6A1E" text-anchor="middle" font-weight="600">Finalization</text>
+      </g>
+      <g class="stop-group" data-stop="term_adopt" onclick="openStop('term_adopt')">
+        <circle class="stop-circle" cx="1590" cy="545" r="13" fill="#C9A24B" stroke="white" stroke-width="3"/>
+        <text x="1590" y="568" class="stop-label" font-size="9.5" fill="#8A6A1E" text-anchor="middle" font-weight="700">A Forever Family</text>
+      </g>
+
+    </svg>
+  </div>
+
+  <!-- Infrastructure Badge moved into the header (see .legend-bar) -->
+</div>
+
+<!-- TOOLTIP -->
+<div class="stop-tooltip" id="tooltip"></div>
+
+<!-- DRAWER -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <div class="drawer-line-tag" id="drawerLineTag"></div>
+    <div class="drawer-stop-num" id="drawerStopNum"></div>
+    <div class="drawer-title" id="drawerTitle"></div>
+    <div class="drawer-transfer-note" id="drawerTransfer" style="display:none"><span>⬡</span><span id="drawerTransferText"></span></div>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+</div>
+
+<!-- JOURNEY OVERLAY -->
+<div class="journey-overlay" id="journeyOverlay">
+  <div class="journey-header">
+    <div class="journey-header-left">
+      <div class="journey-line-badge" id="journeyBadge"></div>
+      <div><div class="journey-title" id="journeyTitle"></div><div class="journey-subtitle" id="journeySubtitle"></div></div>
+    </div>
+    <button class="journey-close" onclick="closeJourney()">✕</button>
+  </div>
+  <div class="journey-body">
+    <div class="journey-rail" id="journeyRail"></div>
+    <div class="journey-content" id="journeyContent"></div>
+  </div>
+</div>
+
+<!-- INFRA MODAL -->
+<div class="modal-overlay" id="infraModal" onclick="closeInfraModal(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeInfraModal()">✕</button>
+    <div class="modal-title">System Infrastructure: Who Runs the System</div>
+    <div>
+      <p style="margin-bottom:16px;color:var(--gray-500);font-size:13px;">Florida's child welfare system is organized by CBC Lead Agency — nonprofits contracted by DCF to manage all foster care and child welfare services within a specific geographic circuit.</p>
+      <div class="infra-org"><div class="infra-org-name">Children's Network of Hillsborough (CNHC)</div><div class="infra-org-tag">Circuit 13 — Hillsborough County</div><div class="infra-org-desc">The CBC lead agency for Hillsborough County. CNHC contracts with and oversees all foster care providers, case management agencies, and services for children and families in Hillsborough. Every case in Hillsborough County runs through CNHC.</div></div>
+      <div class="infra-org"><div class="infra-org-name">Family Support Services of Suncoast</div><div class="infra-org-tag">Circuit 6 — Pinellas &amp; Pasco Counties</div><div class="infra-org-desc">The CBC lead agency for Pinellas and Pasco Counties (Circuit 6). FSS oversees all child welfare services, placements, and case management in the circuit. When a child is removed in Pinellas or Pasco, FSS assumes all responsibility for the case.</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── COLOR MAP ────────────────────────────────────────────────────────────────
+const LC = {
+  child:   {bg:'#b7e0d5', dark:'#2a8a76', light:'#e8f7f4'},
+  foo:     {bg:'#f6957a', dark:'#c04a2a', light:'#fef0ec'},
+  village: {bg:'#bbb2a7', dark:'#5a5048', light:'#f3f1ef'},
+  transfer:{bg:'#6B7280', dark:'#374151', light:'#f3f4f6'},
+  diversion:{bg:'#f7b8a6', dark:'#c04a2a', light:'#fdf2ee'},
+  adopt:   {bg:'#C9A24B', dark:'#8A6A1E', light:'#f6efd9'},
+};
+
+// ─── STOP DATA ────────────────────────────────────────────────────────────────
+const ORG_URLS = {"A Kid's Place of Tampa Bay": "https://akidsplacetb.org","Agency for Community Treatment Services": "https://www.actsfl.org","Agency for Community Treatment Services (ACTS)": "https://www.actsfl.org","Bay Area Legal Services": "https://bals.org","Bay Area Legal Services (BALS)": "https://bals.org","Bay Area Youth Services": "https://www.baysfl.org","Better Together": "https://bettertogetherus.org","CASA Pinellas": "https://casapinellas.org","Camelot Community Care": "https://www.camelotcommunitycare.org","A Door of Hope": "https://www.adoorofhope.com/","Children's Home Network": "https://www.childrenshomenetwork.org","Devereux Advanced Behavioral Health": "https://www.devereux.org","Health Connect America": "https://healthconnectamerica.com","One More Child": "https://onemorechild.org","Thompson Child & Family Focus": "https://thompsoncff.org","CarePortal": "https://careportal.org","Center for Attachment & Trauma LLC": "https://centerforattachment.com","Champions for Children": "https://cfctb.org","Children's Home Network — Kinship Navigation Program": "https://www.childrenshomenetwork.org","Children's Network of Hillsborough": "https://childrensnetworkhillsborough.org","Children's Network of Hillsborough (CNHC)": "https://childrensnetworkhillsborough.org","Chrysalis Health": "https://www.chrysalishealth.com","Community Law Program": "https://lawprogram.org","Community Law Program (CLP)": "https://lawprogram.org","Directions for Living": "https://directionsforliving.org","Families First of Florida": "https://www.familiesfirstfl.com","Family Enrichment Center (FEC)": "https://www.fectampa.org","Family Enrichment Services": "https://www.familyenrichmentservices.org","Family Support Services": "https://fssc6.org","Family Support Services of Suncoast": "https://fssc6.org","Florida DCF — Child Protective Investigations": "https://www.myflfamilies.com/services/abuse/abuse-hotline","Finally Home Christian Adoption Services": "https://finallyhomecas.com","Florida 1.27": "https://florida127.org","Florida Abuse Hotline": "https://www.myflfamilies.com/services/abuse/abuse-hotline","Florida DCF": "https://www.myflfamilies.com","Florida DCF — Children's Legal Services": "https://www.myflfamilies.com/services/child-family/childrens-legal-services","Florida Guardian ad Litem — Circuit 13": "https://guardianadlitem.org","Florida Guardian ad Litem — Circuit 6": "https://guardianadlitem.org","Florida Youth SHINE": "https://www.floridaschildrenfirst.org/florida-youth-shine","Florida's Children First": "https://www.floridaschildrenfirst.org","Forever Home Foundation": "https://foreverhomefoundation.com","Forgotten Angels Florida": "https://www.forgottenangelsflorida.org","Fostering Change Foster Closet": "https://fosteringchangecloset.com","Fostering Hearts Florida": "https://fosteringheartsfl.org","Fostering Hope Florida": "https://fosteringhopeflorida.org","Gift of Adoption": "https://giftofadoption.org","Gulf Coast Jewish Family & Community Services": "https://gulfcoastjfcs.org","Safe at Home (Gulf Coast JFCS)": "https://gulfcoastjfcs.org/children-family-service/","Intensive Family Services Team (IFST)": "https://childrensnetworkhillsborough.org","Connecting Family Paths (LSF)": "https://lsffamilyfocus.org/connecting-family-paths-lsf-family-focus/","Safe Families for Children": "https://tampa.safe-families.org","Healthy Families Hillsborough": "https://healthystarthillsborough.org","Heart Gallery of Tampa": "https://heartgallerytampa.org","Heart of Adoptions": "https://heartofadoptions.com","Hillsborough County Family Partnership Alliance": "https://hcfpa.org","Hillsborough County Family Partnership Alliance (HCFPA)": "https://hcfpa.org","Homeless Emergency Project (HEP)": "https://www.hepempowers.org","Lutheran Services Florida": "https://www.lsfnet.org","Mary Lee's House": "https://www.maryleeshouse.org","Metropolitan Ministries": "https://www.metromin.org","National Youth Advocate Program (NYAP)": "https://nyap.org","New Life Village": "https://newlifevillage.org","Operation PAR": "https://www.operationpar.org","Pasco County Foster & Adoptive Parent Association": "https://www.pascofapa.com","Pasco Kids First": "https://pascokidsfirst.org","Pinellas County Foster & Adoptive Parents Association": "https://pcfapa.org","Ready for Life (Pinellas)": "https://readyforlifepinellas.org","Redeeming Love Foster Closet": "https://www.northsidebible.org/card/24","Safe & Sound Hillsborough": "https://safeandsoundhillsborough.org","SailFuture": "https://sailfuture.org","Success 4 Kids & Families": "https://success4kidsandfamilies.org","Suncoast Center — Pinellas Children's Advocacy": "https://www.suncoastcenter.org","Suncoast Voices for Children": "https://suncoastvoices.org","Sylvia Thomas Center": "https://sylviathomascenter.org","Tampa Bay Foster Care & Adoption Alliance": "https://www.tbfcaa.org","The Spring of Tampa Bay": "https://thespring.org","USF Child Protection Team": "https://health.usf.edu/medicine/pediatrics/cpt","Voices for Children of Tampa Bay": "https://vfctampabay.org","West Florida Foster Care Services": "https://wffcs.org","Selfless Love Foundation": "https://selflesslovefoundation.org","Camelot Adoption Services": "https://www.camelotcommunitycare.org","Camelot IL": "https://www.camelotcommunitycare.org","One Hope United": "https://www.onehopeunited.org","ALPHA House of Pinellas County": "https://alphahousepinellas.org/","Adapt & Transform Behavior, LLC": "https://atbx.org","Adoption Choices of Florida": "https://adoptionchoicesflorida.com","Adoption Related Services of Pinellas (Family Enrichment Services)": "https://www.familyenrichmentservices.org/","Affordable Counseling by Susan McMillan": "https://affordablecounselingbysusanmcmillan.com","Aspire Health Partners": "https://aspirehealthpartners.com","Bay Area Behavioral Services": "https://www.bayareabehavioral.com","Bay Area Neuropsychology  LLC": "https://www.bayareaneuropsychology.com","BayCare Behavioral Health": "https://baycare.org","Behavior Analysis & Therapy (BAIT)": "https://www.baitfl.com","Beth-El Farmworker Ministry, Inc.": "https://beth-el.org/","Bethel Community Foundation, Inc.": "https://bethelcommunityfoundation.com/","Big Brothers Big Sisters of Tampa Bay": "https://bbbstampabay.org","Boley Centers, Inc.": "https://boleycenters.org/about/","Boys & Girls Clubs of Greater Tampa Bay": "https://bgctampa.org","Bridging Freedom": "https://www.bridgingfreedom.org","Calvary Church – X150 Children (Foster Care Engagement)": "https://calvary.us","Central Florida Behavioral Health Network, Inc.": "https://www.cfbhn.org/faqs-and-resources/","Children’s Advocacy Center Foundation of Pinellas County (CACFP)": "https://cacfpinellas.com/","Children’s Advocacy Center – 13th Judicial Circuit (at Mary Lee’s House)": "https://fljud13.org/Court-Services/Court-Programs/Childrens-Justice-Center/Childrens-Advocacy-Center","Creative Changes Counseling": "https://www.creativechangescounselingfl.com","Crisis Center of Tampa Bay": "https://www.crisiscenter.com/news/s4kf/","Crossover Church – Foster & Adoption Support": "https://crossoverchurch.org","Crossroads For Florida Kids": "https://www.crossroadsfloridakids.org/","Dawning Family Services (formerly Alpha House of Tampa)": "https://www.dawningfamilyservices.org","Daystar Life": "https://daystarlife.org/services/","Declare NoMore": "https://declarenomore.com","Directions for Mental Health, Inc.  DBA: directions for living": "https://directionsforliving.org","Disability Rights Florida": "https://transition.disabilityrightsflorida.org/additional-considerations-for-youth-with-disabilities-in-foster-care/","Dunedin Cares, Inc.": "https://dunedincares.org/get-help/","Eleos Wellness (PEMHS)": "https://eleoswellness.org/contact/","Everyday Blessings": "https://everydayblessingsinc.org","Family Center on Deafness": "https://fcdpinellas.org/","Family Promise of Hillsborough County": "https://familypromisetampa.org","Family Resources Inc.": "https://familyresourcesinc.org","Feeding Tampa Bay": "https://feedingtampabay.org","Florida Department of Health in Pinellas County – Nurse-Family Partnership": "https://pinellas.floridahealth.gov","Florida Department of Juvenile Justice – Circuit 13": "https://www.djj.state.fl.us","Florida Department of Juvenile Justice – Circuit 6": "https://www.djj.state.fl.us","Florida Guardian ad Litem Office (Statewide)": "https://guardianadlitem.org","Florida Guardian ad Litem Office – Circuit 13 (Hillsborough)": "https://guardianadlitem.org","Florida Guardian ad Litem – 6th Judicial Circuit (Pinellas & Pasco)": "https://guardianadlitem.org/","FosterPower – Bay Area Legal Services": "https://bals.org/childrens-law-center/fosterpower","Frameworks of Tampa Bay": "https://frameworkstb.org","Friends of Joshua House Foundation": "https://www.friendsofjoshuahouse.org","Gift of Life Adoptions": "https://giftoflifeadoptions.com","Grace Family Church – The Village (Foster & Kinship Support)": "https://gfcflorida.com/foster","Greater Palm River Point CDC (Palm River Family Services)": "https://www.PalmRiverFamilyServices.org","Grow Into You Foundation": "https://www.growintoyoufoundation.org","Gulfcoast Legal Services": "https://gulfcoastlegal.org/legal-help/","Hands Across the Bay": "https://handsacrossthebay.org/stabilize-families/","Healthy Families Pasco/Hernando": "https://www.pascokidsfirst.org","Healthy Families Pinellas": "https://pinellas.floridahealth.gov/programs-and-services/clinical-and-nutrition-services/healthy-start-healthy-families/healthy-families-pinellas/","Healthy Start Coalition of Hillsborough County": "https://healthystarthillsborough.org","Healthy Start Coalition of Pasco, Inc.": "https://healthystartcoalitionpasco.org/our-history","Healthy Start Coalition of Pinellas County": "https://healthystartpinellas.org","Heart Gallery (Pinellas & Pasco) – Gulf Coast JFCS": "https://gulfcoastjfcs.org","Hero To A Child": "https://herotoachild.org","Hillsborough County Children's Services": "https://www.hcfl.gov","Hillsborough Education Foundation": "https://educationfoundation.com","Hispanic Services Council": "https://www.hispanicservicescouncil.org/","Homeless Leadership Alliance of Pinellas": "https://www.pinellashomeless.org/about-us","Hope Children’s Home": "https://hopechildrenshome.org/","Hope Villages of America": "https://hopevillagesofamerica.org","I Matter Too": "https://www.imattertoo.com","I Support the Girls – Tampa Bay": "https://isupportthegirls.org/affiliates/tampa-bay/","Ibis Healthcare (COVE / formerly DACCO)": "https://ibishealthcare.org/","Idlewild Baptist Church": "https://idlewildfostercare.org/contact/","Idlewild Foundation / Hope for the Orphan (Foster Care Support)": "https://idlewildfostercare.org","InterCultural Advocacy Institute (Hispanic Outreach Center)": "https://hispanicoutreachcenter.org/contact-us/","James B. Sanderlin Neighborhood Family Center": "https://sanderlinfamilycenter.org/courses/programs/","Junior League of Tampa": "https://jltampa.org","Junior League of Tampa – Diaper Bank": "https://www.jltampa.org","Just Initiative": "https://www.justinitiative.com/programs","Keys to Independence – FLITE Center": "https://keystoindependencefl.com/","Loving Children": "https://lovingchildrentoday.org","Madi's Movement": "https://madismovement.org/","Man Up and Go": "https://manupandgo.org","National CASA/GAL Association for Children": "https://nationalcasagal.org","OASIS Opportunities": "https://www.oasisopportunities.org/","Oasis Pregnancy Care Centers": "https://www.heartsforoasis.org/the-ministry/","One Church One Child of Florida": "https://ococfl.org/","PACE Center for Girls – Hillsborough": "https://pacecenter.org","PACE Center for Girls – Pinellas": "https://pacecenter.org","Pace Center for Girls – Pasco": "https://www.pacecenter.org/locations/florida/pasco/","Pasco Family Shelter (Catholic Charities Diocese of St. Petersburg)": "https://www.ccdosp.org/pasco-family-shelter","Pinellas Education Foundation": "https://pinellaseducation.org","Pinellas Hope (Catholic Charities)": "https://pinellashope.org","Pinellas Safe Harbor (Pinellas County Sheriff's Office)": "https://www.pinellassheriff.gov/SafeHarbor","Positive Spin, Inc.": "https://positivespinfl.org/services/","Radiant Church – Foster Care Ministry": "https://weareradiant.com/outreach","ReachUP, Inc. – Healthy Start (Home Visiting)": "https://www.reachupincorporated.org","Redeeming Refuge": "https://redeemingrefuge.org","R’Club Child Care, Inc.": "https://www.rclub.net/","Selah Freedom": "https://selahfreedom.com/about/","St. Vincent de Paul – St. Petersburg": "https://svdpsp.org","Starting Right, Now": "https://startingrightnow.org","State Attorney – 13th Circuit (Child Welfare)": "https://www.sao13th.com","State Attorney – 6th Circuit (Child Welfare)": "https://www.sao6.org","Suncoast Center, Inc.": "https://www.suncoastcenter.org","Sunrise of Pasco County, Inc.": "https://www.sunrisepasco.org","Tampa Bay Diaper Bank": "https://www.tampabaydiaperbank.org","Tampa Bay Foster Care and Adoption Alliance": "https://www.tbfcaa.org/","Tampa Hillsborough Homeless Initiative (THHI)": "https://www.thhi.org","Tampa Jewish Family Services": "https://tjfs.org/","The Cloth Option": "https://www.theclothoption.org","The Coalition for the Homeless of Pasco County": "https://www.pascohomelesscoalition.org","The Life Center of the Suncoast": "https://lifecentersuncoast.org","The Salvation Army St. Petersburg (Emergency Shelter & Services)": "https://stpetersburg.salvationarmyflorida.org","Tri-County Human Services, Inc.": "https://tricountyhumanservices.org","YMCA of Greater St. Petersburg": "https://www.stpeteymca.org/childcare/parents-morning-out/","Youth Advocate Programs, Inc. – Hillsborough": "https://www.yapinc.org/Hillsborough","Youth and Family Advocates, Inc.": "https://yfainc.org/"};
+function orgLink(name){
+  const u=ORG_URLS[name];
+  return u ? `<a href="${u}" target="_blank" rel="noopener noreferrer">${name}</a>` : name;
+}
+function orgLinkList(str){
+  return str.split('\u00b7').map(p=>{
+    const t=p.trim();
+    return ORG_URLS[t] ? `<a href="${ORG_URLS[t]}" target="_blank" rel="noopener noreferrer">${t}</a>` : t;
+  }).join(' \u00b7 ');
+}
+
+const stops = {
+  v1:{line:'village',lineName:'Foster Family',stopNum:'Stop 1 of 15',title:'Something Stirs',
+    description:'Every foster family begins somewhere. For some, it\'s a statistic that won\'t leave them alone. For others, it\'s a conversation, a sermon, a story, a friend\'s experience. Something stirs — a sense that there are children who need families, and that maybe, somehow, they are part of the answer.',
+    voice:'You don\'t have to have it all figured out to take the next step. You don\'t have to have a perfect home, a perfect marriage, or a perfect life. The first step is simply asking the question: could we do this?',
+    voiceLabel:'What This Means for Your Family',
+    keyTerms:[['Foster Care','A temporary arrangement in which a licensed family provides care for a child who cannot safely remain with their birth family.'],['Foster Family','A licensed family that opens their home to a child in care — supported by a wider village of communities, churches, and individuals.']],
+    tips:['Attend an information session before deciding — they explain what fostering actually involves.','Talk honestly as a family, including with children already in your home.','Connect with current foster families — their experience is more valuable than any brochure.'],
+    orgs:[['Tampa Bay Foster Care & Adoption Alliance','tbfcaa.org'],['Children\'s Network of Hillsborough (CNHC)','CBC lead · Hillsborough'],['Family Support Services of Suncoast','CBC lead · Pinellas & Pasco'],['Florida 1.27','Faith community mobilization for foster care'],['CarePortal','Connects the church to needs of children and families · tri-county'],['Better Together','Mobilizes community support for foster families · tri-county'],['A Door of Hope','Licensing agency · Hillsborough'],['Camelot Community Care','Case management & licensing · multiple FL incl. Hillsborough'],['Children\'s Home Network','Licensing agency · tri-county'],['Devereux Advanced Behavioral Health','Licensing agency · statewide'],['Health Connect America','Licensing agency · multi-state'],['National Youth Advocate Program (NYAP)','Licensing agency · Hillsborough, Pinellas & Pasco'],['One More Child','Foster care agency · Hillsborough'],['Thompson Child & Family Focus','Case management · multi-state incl. FL'],['Calvary Church – X150 Children (Foster Care Engagement)','Foster & adoption · Hillsborough'],['Crossover Church – Foster & Adoption Support','Community & support · Hillsborough'],['Grace Family Church – The Village (Foster & Kinship Support)','Foster & adoption · tri-county'],['Idlewild Baptist Church','Community support'],['Idlewild Foundation / Hope for the Orphan (Foster Care Support)','Foster & adoption · Hillsborough'],['Radiant Church – Foster Care Ministry','Community & support · Hillsborough & Pasco']]},
+
+  v2:{line:'village',lineName:'Foster Family',stopNum:'Stop 2 of 15',title:'Info Session',
+    description:'You\'ve decided to attend an information session or orientation. This is where you begin to understand what the foster care system actually looks like — who the key players are, what the process involves, what will be asked of you, and what support is available. And if you already know your goal is adoption, you can follow the Adoption line from here.',
+    voice:'The info session is where reality begins to replace assumption. Some people leave more committed than when they walked in. Some leave with serious questions. Both responses are healthy.',
+    voiceLabel:'What This Means for Your Family',
+    keyTerms:[['CBC Lead Agency','Community-Based Care lead agency — in Hillsborough: CNHC. In Pinellas & Pasco: FSS.']],
+    tips:['Bring your spouse or partner — both licensed adults must participate.','Ask about the types of children placed in your area so your expectations are grounded in reality.','Ask what happens on the day a child is placed — these logistics are often overlooked.'],
+    who:[['CBC Lead Agency Staff','Presenting the overview of the system and process'],['Current or Former Foster Families','Often invited to share real experience']],
+    askBring:['Ask: What are the most common ages and needs of children placed here?','Ask: What support will we have once a child is in our home?','Ask: What is the timeline from orientation to licensure?'],
+    orgs:[['Children\'s Network of Hillsborough (CNHC)','Orientation and licensing · Hillsborough'],['Family Support Services of Suncoast','Orientation and licensing · Pinellas & Pasco'],['West Florida Foster Care Services','Orientation and licensing · Pasco'],['Families First of Florida','Foster Hope: orientation and eligibility · tri-county'],['Pasco County Foster & Adoptive Parent Association','Peer support · Pasco'],['Pinellas County Foster & Adoptive Parents Association','Peer support · Pinellas']]},
+
+  v3:{line:'village',lineName:'Foster Family',stopNum:'Stop 3 of 15',title:'Pre-Service Training',
+    description:'Florida requires all prospective foster and adoptive families to complete a DCF state-approved pre-service curriculum — approximately 30 hours of instruction covering child development, trauma, attachment, the foster care system, working with birth families, and the role of the foster parent.',
+    voice:'Pre-service training is not just a box to check — it is the most honest preview you will get of what fostering actually involves. The families who come out of it with clear eyes and a still-present yes are the ones who are genuinely ready.',
+    voiceLabel:'What This Means for Your Family',
+    keyTerms:[['Pre-Service Curriculum','The DCF state-approved training all prospective foster families must complete (about 30 hours). The specific curriculum is set by the agency and can change year to year — CNHC uses PRIDE; FSS uses PRIDE/NTDC (National Training & Development Curriculum).'],['Background Check','Criminal history and child welfare history screenings for all adults. Required for all household members 12 and older.'],['Trauma-Informed Care','An approach to caregiving that understands behaviors in the context of trauma history rather than interpreting them as defiance.'],['Birth Family Partnership','The principle that foster families work with — not against — birth families when reunification is the goal.']],
+    tips:['Attend every session — missing requires makeup hours and delays your timeline.','Your training cohort often becomes a lasting support network.','Be honest in the self-assessment portions — this training helps you decide, not just certify you.'],
+    orgs:[['Children\'s Network of Hillsborough (CNHC)','PRIDE pre-service training · Hillsborough'],['Family Support Services of Suncoast','PRIDE/NTDC pre-service training · Pinellas & Pasco'],['West Florida Foster Care Services','Pre-service training · Pasco'],['Families First of Florida','Foster care training and licensing · tri-county'],['Hillsborough County Family Partnership Alliance (HCFPA)','Caregiver training and support · Hillsborough'],['Keys to Independence – FLITE Center','Youth services · tri-county'],['One Church One Child of Florida','Foster & adoption · tri-county']]},
+
+  v4:{line:'village',lineName:'Foster Family',stopNum:'Stop 4 of 15',title:'The Home Study',
+    description:'Before a foster license can be issued, a Home Study must be completed — a formal assessment including background checks on all adults in the home, a physical inspection of your living space, individual and joint interviews with all household members, and a review of your references.',
+    voice:'The Home Study can feel invasive. Someone is coming into your home, interviewing your children, reviewing your finances, and asking deeply personal questions. This is by design. There is no perfect home — but there are safe, loving, prepared ones.',
+    voiceLabel:'What This Means for Your Family',
+    keyTerms:[['Home Study','A comprehensive assessment of a household\'s safety, stability, and readiness to provide foster care. Required before licensure.'],['Physical Space Requirements','Florida has specific requirements for sleeping arrangements, safety equipment, and home conditions.']],
+    tips:['Submit background checks early — they take time.','Be honest about past challenges — discovered omissions are far more damaging than disclosed realities.','Talk to your children before the licensing worker meets with them.'],
+    askBring:['Ask: What documentation do I need before the home visit?','Ask: What are the specific physical space requirements for our county?','Bring: Birth certificates, marriage certificate, financial statements, reference contacts.'],
+    orgs:[['Children\'s Network of Hillsborough (CNHC)','Licensing and home study · Hillsborough'],['Family Support Services of Suncoast','Licensing and home study · Pinellas & Pasco'],['West Florida Foster Care Services','Home study and licensing · Pasco'],['Families First of Florida','Licensing support · tri-county'],['Finally Home Christian Adoption Services','Home study services · statewide'],['A Door of Hope','Licensing & home study · Hillsborough'],['Camelot Community Care','Licensing & home study · multiple FL incl. Hillsborough'],['Children\'s Home Network','Licensing & home study · tri-county'],['Devereux Advanced Behavioral Health','Licensing & home study · statewide'],['Health Connect America','Licensing & home study · multi-state'],['National Youth Advocate Program (NYAP)','Licensing & home study · Hillsborough, Pinellas & Pasco'],['Keys to Independence – FLITE Center','Youth services · tri-county'],['One Church One Child of Florida','Foster & adoption · tri-county']]},
+
+  v5:{line:'village',lineName:'Foster Family',stopNum:'Stop 5 of 15',title:'Licensed',
+    description:'Your foster care license has been issued. You\'ve completed orientation, pre-service training, and your home study. The state of Florida has determined that your home is safe, your family is prepared, and you are ready to receive a placement.',
+    voice:'You said yes. You did the work. You are licensed. Take a moment to acknowledge that. And then understand that the real education begins when a child walks through your door. Ask for help before you need it desperately.',
+    voiceLabel:'What This Means for Your Family',
+    keyTerms:[['Foster Care License','A state-issued license authorizing your household to provide foster care. Must be renewed annually.'],['Respite Care','Temporary care provided by another licensed family to give foster parents a planned break. Critical and underused.']],
+    tips:['Celebrate — this took real commitment.','Connect immediately with your local Foster & Adoptive Parent Association.','Identify your respite resources now, before you need them.'],
+    orgs:[['Children\'s Network of Hillsborough (CNHC)','Licensing renewal · Hillsborough'],['Family Support Services of Suncoast','Licensing renewal · Pinellas & Pasco'],['Hillsborough County Family Partnership Alliance (HCFPA)','Caregiver training, support, and advocacy · Hillsborough'],['Pasco County Foster & Adoptive Parent Association','Peer support · Pasco'],['Pinellas County Foster & Adoptive Parents Association','Peer support · Pinellas'],['Fostering Hope Florida','Ongoing foster family support · Pinellas & Pasco'],['Grace Family Church – The Village (Foster & Kinship Support)','Foster & adoption · tri-county'],['Hillsborough County Children\'s Services','Family preservation & youth services · Hillsborough'],['YMCA of Greater St. Petersburg','Community & support · Pinellas']]},
+
+  v6:{line:'village',lineName:'Foster Family',stopNum:'Stop 6 of 15',title:'Ready and Waiting',
+    description:'Your license is active and you are waiting for a placement call. This may last days or months. The waiting period is strange — you have prepared your home, your heart, and your family for a child who is not yet there.',
+    voice:'Waiting is its own kind of hard. The nursery is ready. The closet has clothes. And nothing happens for weeks. Use this time well. Rest. Strengthen your support network. Hold the waiting lightly — because when the call comes, everything changes fast.',
+    voiceLabel:'What This Means for Your Family',
+    keyTerms:[['Placement Call','The call from your CBC asking whether you can accept a specific child or sibling group. You have the right to say no.'],['Emergency Placement','A placement that happens within hours — a child was just removed and needs immediate placement. This is a real foster placement, not one-night or emergency-shelter housing.']],
+    tips:['Keep your home ready — emergency calls don\'t give much notice.','Have a bag of basics ready for a child of any age — toiletries, clothing, comfort items.','When the call comes: ask questions. You have the right to information before accepting.'],
+    askBring:['Ask: What is the child\'s age and immediate needs?','Ask: Are there siblings? Are they being placed together?','Ask: Are there any immediate medical or behavioral concerns?'],
+    orgs:[['Children\'s Network of Hillsborough (CNHC)','Placement coordination · Hillsborough'],['Family Support Services of Suncoast','Placement coordination · Pinellas & Pasco'],['Fostering Change Foster Closet','24/7 clothing and essentials — keep this number saved · Pasco'],['Redeeming Love Foster Closet','Clothing and essentials — keep this number saved · Hillsborough'],['CarePortal','Community support connector · tri-county'],['Beth-El Farmworker Ministry, Inc.','Community & support · Hillsborough'],['Declare NoMore','Community support'],['Dunedin Cares, Inc.','Community & support · Pinellas'],['Feeding Tampa Bay','Community & support · tri-county'],['Greater Palm River Point CDC (Palm River Family Services)','Prevention & family support · Hillsborough'],['Hope Villages of America','Housing & placement · Pinellas'],['I Matter Too','Community support'],['I Support the Girls – Tampa Bay','Community & support · tri-county'],['James B. Sanderlin Neighborhood Family Center','Prevention & family support · Pinellas'],['Junior League of Tampa','Community support · Hillsborough'],['Junior League of Tampa – Diaper Bank','Community & support · Hillsborough'],['Just Initiative','Housing & placement · Hillsborough'],['Tampa Bay Diaper Bank','Community & support · tri-county'],['The Cloth Option','Community & support · national'],['The Salvation Army St. Petersburg (Emergency Shelter & Services)','Housing & placement · Pinellas']]},
+
+  v7:{line:'village',lineName:'Foster Family',stopNum:'Stop 8 of 15',title:'A Child Arrives',
+    description:'The child is in your home. The first hours and days of a placement are among the most important — and the most disorienting. A child who has just been removed from their family is grieving, even if they don\'t look like it.',
+    voice:'The child who walked into your home tonight is not the child you will know in six months. Trauma responses look like behavior problems. Grief looks like defiance. Fear looks like anger. Give this child — and yourself — time.',
+    voiceLabel:'What This Means for Your Family',
+    keyTerms:[['Trauma Response','Behavioral, emotional, or physical reactions rooted in a child\'s history of adversity — not their character or your parenting.'],['Safety and Routine','The two things that most quickly communicate to a traumatized child that this place is different.']],
+    tips:['Keep the first days simple — familiar foods, calm spaces, clear routines.','Don\'t take early behavior personally. It is not about you.','Check in with your licensing worker within 24-48 hours.'],
+    orgs:[['Center for Attachment & Trauma LLC','Trauma-informed therapy and support · Hillsborough'],['Success 4 Kids & Families','Behavioral health support · Hillsborough'],['Directions for Living','Integrated behavioral health · Pinellas'],['Families First of Florida','Foster care support and behavioral health · tri-county'],['Hillsborough County Family Partnership Alliance (HCFPA)','Caregiver support · Hillsborough'],['Florida 1.27','TBRI caregiver training · tri-county'],['Mobile Response Team','Mobile crisis response for children & youth · tri-county'],['Adapt & Transform Behavior, LLC','Behavioral health · Hillsborough'],['Adoption Choices of Florida','Adoption · Hillsborough'],['Adoption Related Services of Pinellas (Family Enrichment Services)','Foster & adoption · tri-county'],['Affordable Counseling by Susan McMillan','Behavioral health · Hillsborough'],['Aspire Health Partners','Behavioral health · statewide'],['Bay Area Behavioral Services','Behavioral health · Hillsborough'],['Bay Area Neuropsychology  LLC','Behavioral health · Hillsborough'],['BayCare Behavioral Health','Behavioral health'],['Behavior Analysis & Therapy (BAIT)','Behavioral health'],['Bethel Community Foundation, Inc.','Prevention & family support · Pinellas'],['Boley Centers, Inc.','Housing & placement · Pinellas'],['Bridging Freedom','Community & support'],['Central Florida Behavioral Health Network, Inc.','Behavioral health · tri-county'],['Children’s Advocacy Center Foundation of Pinellas County (CACFP)','Legal & court-adjacent support · Pinellas'],['Creative Changes Counseling','Behavioral health · Hillsborough'],['Crisis Center of Tampa Bay','Behavioral health · Hillsborough'],['Directions for Mental Health, Inc.  DBA: directions for living','Behavioral health · Pinellas & Pasco'],['Eleos Wellness (PEMHS)','Behavioral health · Pinellas'],['Family Resources Inc.','Family preservation & youth services · Pinellas & Pasco'],['Friends of Joshua House Foundation','Community & support · Hillsborough'],['Hillsborough County Children\'s Services','Family preservation & youth services · Hillsborough'],['Ibis Healthcare (COVE / formerly DACCO)','Behavioral health · Hillsborough'],['Madi\'s Movement','Community & support · Hillsborough'],['Oasis Pregnancy Care Centers','Prevention & family support · Hillsborough & Pasco'],['PACE Center for Girls – Hillsborough','Education & behavioral health · Hillsborough'],['Pace Center for Girls – Pasco','Youth services · Pasco'],['PACE Center for Girls – Pinellas','Education & behavioral health · Pinellas'],['Pasco Family Shelter (Catholic Charities Diocese of St. Petersburg)','Housing & placement · Pasco'],['State Attorney – 13th Circuit (Child Welfare)','Legal & criminal justice · Hillsborough'],['State Attorney – 6th Circuit (Child Welfare)','Legal & criminal justice · Pinellas & Pasco'],['Suncoast Center, Inc.','Community & support · Pinellas'],['Sunrise of Pasco County, Inc.','Community & support · Pasco'],['Tampa Jewish Family Services','Prevention & family support · Hillsborough'],['The Life Center of the Suncoast','Community & support · Hillsborough'],['Tri-County Human Services, Inc.','Community & support · Hillsborough'],['Youth Advocate Programs, Inc. – Hillsborough','Prevention & family support · Hillsborough']]},
+
+  v8:{line:'village',lineName:'Foster Family',stopNum:'Stop 10 of 15',title:'Building a Team',
+    description:'Once a child is placed in your home, a team of professionals surrounds them — a case manager, a GAL, a therapist, possibly an education liaison. Your job as the foster family is to become an active member of that team.',
+    voice:'You are not a bystander in this child\'s case — you are its most informed participant. Speak up. Document. Advocate. Build relationships with everyone on the team.',
+    voiceLabel:'What This Means for Your Family',
+    keyTerms:[['Team Meetings & Staffings','The recurring meetings that coordinate a child\'s case — these may include an MDT (multidisciplinary team staffing), ESSA (educational student services), behavioral health staffings, permanency staffings, and family team meetings. Hillsborough does not use the "Child and Family Team / CFT" label.'],['Blue Book / Yellow Jacket','An administrative tool — the child\'s official Child Resource Record (CRR).'],['Placement Documentation','Records you keep of the child\'s behaviors, health, school performance, and emotional wellbeing.']],
+    tips:['Keep a simple daily log of notable behaviors, incidents, and milestones.','Attend every team meeting or staffing — you are an active participant.','Build a relationship with the GAL — they report directly to the judge.'],
+    askBring:['Ask your CM: When is the next team meeting or staffing?','Ask: What is the current permanency goal?','Ask: What documentation should I be keeping?'],
+    orgs:[['Florida Guardian ad Litem — Circuit 13','Hillsborough · 813-272-5110'],['Florida Guardian ad Litem — Circuit 6','Pinellas & Pasco · 727-464-6528'],['Hillsborough County Family Partnership Alliance (HCFPA)','Caregiver advocacy and support · Hillsborough'],['Pasco County Foster & Adoptive Parent Association','Peer coaching · Pasco'],['Pinellas County Foster & Adoptive Parents Association','Peer coaching · Pinellas'],['Florida Guardian ad Litem – 6th Judicial Circuit (Pinellas & Pasco)','Community & support · Pinellas & Pasco'],['Florida Guardian ad Litem Office – Circuit 13 (Hillsborough)','Community & support · Hillsborough'],['Florida Guardian ad Litem Office (Statewide)','Community & support · tri-county'],['Grace Family Church – The Village (Foster & Kinship Support)','Foster & adoption · tri-county'],['Hillsborough County Children\'s Services','Family preservation & youth services · Hillsborough'],['National CASA/GAL Association for Children','Community & support · statewide'],['YMCA of Greater St. Petersburg','Community & support · Pinellas']]},
+
+  v9:{line:'village',lineName:'Foster Family',stopNum:'Stop 12 of 15',title:'The Pivot Point',
+    description:'Every foster family reaches a moment when the direction of the case becomes clearer — and a decision presents itself. Is this child going home? How do you support that? Or is your family being asked to consider becoming this child\'s permanent family through adoption?',
+    voice:'There is no easy version of this moment. If the child is returning home, you may feel grief. If you are being asked to consider adoption, you may feel both called and terrified. Honor whatever you feel — and then decide what comes next with clear eyes.',
+    voiceLabel:'What This Means for Your Family',
+    keyTerms:[['Dual Role','Holding both a foster and an adoptive approval at once. It keeps the door to adoption open in general — not to any one child in particular — so you can step into an adoptive role when the time is right, without ever giving up fostering.'],['Planned Transition','When a child will be moving to another placement. A well-handled transition minimizes harm.']],
+    tips:['If reunification is happening: share what you know about the child — their routines, fears, favorites.','If considering adoption: talk honestly as a family. Talk to families who have done it.'],
+    orgs:[['Heart of Adoptions','Adoption services · Tampa Bay regional'],['Heart Gallery of Tampa','Adoption recruitment and awareness · Hillsborough'],['Fostering Hope Florida','Foster family support at transition points · Pinellas & Pasco'],['Adoption Choices of Florida','Adoption · Hillsborough'],['Adoption Related Services of Pinellas (Family Enrichment Services)','Foster & adoption · tri-county'],['Calvary Church – X150 Children (Foster Care Engagement)','Foster & adoption · Hillsborough'],['Crossover Church – Foster & Adoption Support','Community & support · Hillsborough'],['Gift of Life Adoptions','Adoption · Pinellas'],['Grace Family Church – The Village (Foster & Kinship Support)','Foster & adoption · tri-county'],['Heart Gallery (Pinellas & Pasco) – Gulf Coast JFCS','Foster care & adoption · Pinellas & Pasco'],['Idlewild Baptist Church','Community support'],['Idlewild Foundation / Hope for the Orphan (Foster Care Support)','Foster & adoption · Hillsborough'],['Loving Children','Community & support'],['Man Up and Go','Family preservation & community support'],['One Church One Child of Florida','Foster & adoption · tri-county'],['Radiant Church – Foster Care Ministry','Community & support · Hillsborough & Pasco'],['Tampa Bay Foster Care and Adoption Alliance','Community & support · tri-county'],['Youth and Family Advocates, Inc.','Family preservation & youth services · tri-county']]},
+
+  // Transfer Stations
+  t1:{line:'transfer',lineName:'Transfer Station',stopNum:'Transfer Station',title:'The Report / The Call',isTransfer:true,transferLines:'The Child · Family of Origin · Foster Family',
+    description:'This is where all three journeys intersect for the first time. A report has been made to the Florida Abuse Hotline. For the Child and Family of Origin, this is the moment that changes everything. For the Foster Family, this may be the placement call they\'ve been waiting and prepared for.',
+    voice:'Three separate lives are about to be permanently connected. One family is in crisis. Another family has been waiting and ready. And somewhere, a child is about to need both of them.',
+    voiceLabel:'What This Moment Means',
+    keyTerms:[['Florida Abuse Hotline','1-800-962-2873 · 24/7 statewide. Over 300,000 calls per year.'],['Reporter','The person who made the call will be anonymous. Teachers, doctors, and counselors are mandated reporters.'],['Placement Call','The call a foster family receives when a child needs an emergency placement.']],
+    tips:['The Abuse Hotline operates 24/7 — anyone can call.','Once a report is accepted, investigation is required by law.','Foster families: have your home ready and Foster Closet number saved before this call comes.'],
+    orgs:[['Florida Abuse Hotline','1-800-962-2873 · statewide'],['Florida DCF — Child Protective Investigations','Investigates accepted reports in Hillsborough, Pinellas, and Pasco'],['Fostering Change Foster Closet','24/7 clothing and essentials · Pasco'],['Redeeming Love Foster Closet','Clothing and essentials · Hillsborough'],['West Florida Foster Care Services','Clothing closet & food pantry · Pasco'],['Beth-El Farmworker Ministry, Inc.','Community & support · Hillsborough'],['Declare NoMore','Community support'],['Dunedin Cares, Inc.','Community & support · Pinellas'],['Feeding Tampa Bay','Community & support · tri-county'],['Greater Palm River Point CDC (Palm River Family Services)','Prevention & family support · Hillsborough'],['Hope Villages of America','Housing & placement · Pinellas'],['I Matter Too','Community support'],['I Support the Girls – Tampa Bay','Community & support · tri-county'],['James B. Sanderlin Neighborhood Family Center','Prevention & family support · Pinellas'],['Junior League of Tampa','Community support · Hillsborough'],['Junior League of Tampa – Diaper Bank','Community & support · Hillsborough'],['Just Initiative','Housing & placement · Hillsborough'],['Tampa Bay Diaper Bank','Community & support · tri-county'],['The Cloth Option','Community & support · national'],['The Salvation Army St. Petersburg (Emergency Shelter & Services)','Housing & placement · Pinellas']]},
+
+  t2:{line:'transfer',lineName:'Transfer Station',stopNum:'Transfer Station',title:'The Courtroom',isTransfer:true,transferLines:'The Child · Family of Origin · Foster Family',
+    description:'Within 24 hours of a child being removed from their home, a Shelter Hearing takes place in dependency court. A judge reviews the situation and temporary placement, and appoints a Guardian ad Litem.',
+    voice:'Three different people are connected to that courtroom — a child who may not even be present, a parent who is terrified, and a foster family waiting at home. The judge\'s decisions affect all of them.',
+    voiceLabel:'What This Moment Means',
+    keyTerms:[['Dependency Court','A specialized court for children who have been abused, neglected, or abandoned. Not criminal court.'],['Shelter Hearing','First court appearance — must happen within 24 hours of removal.'],['Guardian ad Litem (GAL)','Court-appointed advocate for the child\'s best interests — independent of both the state and the parents.']],
+    who:[['Judge','Reviews the situation and temporary placement, and appoints a Guardian ad Litem'],['Children\'s Legal Services Attorney','Files the dependency petition and represents the state throughout the case'],['Parent(s)\'s Attorney','Appointed or retained to represent the birth parent(s)'],['Attorney ad Litem','A lawyer who represents the child\'s own legal wishes in court — distinct from the Guardian ad Litem, who advocates for the child\'s best interests. In some cases, you will also have this type of attorney.'],['CPI','Presents findings from the investigation'],['CBC Case Manager','Being assigned; contacts placement immediately']],
+    orgs:[['Florida Guardian ad Litem — Circuit 13','Hillsborough · 813-272-5110'],['Florida Guardian ad Litem — Circuit 6','Pinellas & Pasco · 727-464-6528'],['Florida DCF — Children\'s Legal Services','State legal representation'],['Bay Area Legal Services (BALS)','Free legal aid · tri-county'],['Community Law Program (CLP)','Free civil legal services · Pinellas'],['Crossroads For Florida Kids','Legal & advocacy · Hillsborough'],['Florida Guardian ad Litem – 6th Judicial Circuit (Pinellas & Pasco)','Community & support · Pinellas & Pasco'],['Florida Guardian ad Litem Office – Circuit 13 (Hillsborough)','Community & support · Hillsborough'],['Florida Guardian ad Litem Office (Statewide)','Community & support · tri-county'],['FosterPower – Bay Area Legal Services','Legal · tri-county'],['Gulfcoast Legal Services','Legal · Pinellas'],['Hispanic Services Council','Prevention & family support · Hillsborough'],['National CASA/GAL Association for Children','Community & support · statewide']]},
+
+  t3:{line:'transfer',lineName:'Transfer Station',stopNum:'Transfer Station',title:'A New Place to Sleep',isTransfer:true,transferLines:'The Child · Foster Family',
+    description:'This is the first deep intersection between The Child and the Foster Family. A child who has just had their world upended walks through the door of a family that has spent months preparing for this moment.',
+    voice:'On one side of that door: a child who is scared, grieving, and disoriented. On the other: a family that said yes. Neither is fully prepared for what comes next. But one of them chose to show up. That matters enormously.',
+    voiceLabel:'What This Moment Means',
+    keyTerms:[['Foster Placement','When a child is placed in the home of a licensed foster family.'],['Emergency Placement','A placement that happens within hours — a child was just removed and needs immediate placement. This is a real foster placement, not one-night or emergency-shelter housing.'],['Kinship Placement','Placement with a relative or someone the child already knows — always the first preference.'],['Residential Group Care','A licensed group home or residential program for children who cannot be placed in a family foster home — used when a family setting is not available or appropriate.'],['Placement Stability','The goal of keeping a child in one consistent, nurturing home throughout their time in care.']],
+    tips:['First nights: keep it simple — familiar foods, calm spaces, clear routines.','Contact your Foster Closet immediately if the child arrived without adequate clothing.','The Case Manager should make contact within 24-48 hours.'],
+    orgs:[['Children\'s Network of Hillsborough (CNHC)','Placement coordination · Hillsborough'],['Family Support Services of Suncoast','Placement coordination · Pinellas & Pasco'],['A Kid\'s Place of Tampa Bay','Keeps siblings together · Hillsborough'],['Fostering Change Foster Closet','24/7 clothing and essentials · Pasco'],['Redeeming Love Foster Closet','Clothing and essentials · Hillsborough'],['Suncoast Voices for Children','Immediate resource support · Pinellas & Pasco'],['Voices for Children of Tampa Bay','Immediate advocacy · Hillsborough'],['West Florida Foster Care Services','Placement support & essentials · Pasco'],['Children\'s Home Network','Group homes & residential care · tri-county'],['SailFuture','Residential care + education · Pinellas'],['Beth-El Farmworker Ministry, Inc.','Community & support · Hillsborough'],['Bridging Freedom','Community & support'],['Dawning Family Services (formerly Alpha House of Tampa)','Housing & placement · Hillsborough'],['Declare NoMore','Community support'],['Dunedin Cares, Inc.','Community & support · Pinellas'],['Everyday Blessings','Community & support'],['Feeding Tampa Bay','Community & support · tri-county'],['Friends of Joshua House Foundation','Community & support · Hillsborough'],['Greater Palm River Point CDC (Palm River Family Services)','Prevention & family support · Hillsborough'],['Hillsborough County Children\'s Services','Family preservation & youth services · Hillsborough'],['Hope Children’s Home','Residential care & family support · Hillsborough'],['Hope Villages of America','Housing & placement · Pinellas'],['I Matter Too','Community support'],['I Support the Girls – Tampa Bay','Community & support · tri-county'],['James B. Sanderlin Neighborhood Family Center','Prevention & family support · Pinellas'],['Junior League of Tampa','Community support · Hillsborough'],['Junior League of Tampa – Diaper Bank','Community & support · Hillsborough'],['Just Initiative','Housing & placement · Hillsborough'],['Pinellas Hope (Catholic Charities)','Housing & placement · Pinellas'],['Pinellas Safe Harbor (Pinellas County Sheriff\'s Office)','Housing & placement · Pinellas'],['Redeeming Refuge','Community & support'],['Selah Freedom','Child protection & advocacy · tri-county'],['Starting Right, Now','Youth housing & transition · Hillsborough & Pinellas'],['Sunrise of Pasco County, Inc.','Community & support · Pasco'],['Tampa Bay Diaper Bank','Community & support · tri-county'],['The Cloth Option','Community & support · national'],['The Life Center of the Suncoast','Community & support · Hillsborough'],['The Salvation Army St. Petersburg (Emergency Shelter & Services)','Housing & placement · Pinellas']]},
+
+  t4:{line:'transfer',lineName:'Transfer Station',stopNum:'Transfer Station',title:'Back to Court (6 Months)',isTransfer:true,transferLines:'The Child · Family of Origin · Foster Family',
+    description:'Federal law requires every dependency case to be reviewed in court every six months. This Judicial Review allows the judge to assess the child\'s current placement, evaluate progress on the case plan, and determine whether the permanency goal should remain the same.',
+    voice:'Six months in, and three people are showing up to this hearing with very different hopes and fears. The child wants to know where their life is going. The parent wants to show they\'ve done the work. The foster family wants to know how to support whatever comes next.',
+    voiceLabel:'What This Moment Means',
+    keyTerms:[['Judicial Review','A court-mandated review of every dependency case every six months — the judge monitors the child\'s needs and evaluates progress on the case plan.'],['Conditions of Return','The specific conditions that must be met for a child to safely return home. Completing the case-plan tasks isn\'t enough on its own — the circumstances that made the home unsafe have to be resolved.'],['Permanency Goal','The long-term plan for the child\'s future.']],
+    who:[['Judge','Reviews all reports and makes legal determinations'],['GAL','Files a written report on the child\'s best interests'],['Children\'s Legal Services','Represents the state\'s position'],['CBC Case Manager','Reports on placement, services, and status'],['Birth Parent + Attorney','Present on case plan progress'],['Foster Family','Have the right to be heard after 90 days of care']],
+    orgs:[['Florida Guardian ad Litem — Circuit 13','813-272-5110'],['Florida Guardian ad Litem — Circuit 6','727-464-6528'],['Children\'s Network of Hillsborough (CNHC)','CBC lead · Hillsborough'],['Family Support Services of Suncoast','CBC lead · Pinellas & Pasco'],['Bay Area Legal Services (BALS)','Free legal aid · tri-county']]},
+
+  t5:{line:'transfer',lineName:'Transfer Station',stopNum:'★ Transfer Station',title:'The Permanency Hearing (12 Months)',isTransfer:true,transferLines:'The Child · Family of Origin · Foster Family',
+    description:'At 12 months, the Judicial Review becomes a Permanency Hearing — the most consequential court date in the entire process. The judge must determine a permanent plan for the child.',
+    voice:'This is the room where futures are decided. One parent may be about to bring their child home. Another may be about to lose them permanently. A foster family may be about to become a permanent one. Whatever happens here, it is not the end of anyone\'s story.',
+    voiceLabel:'What This Moment Means',
+    keyTerms:[['Permanency Hearing','Required at 12 months — the judge establishes or confirms the long-term plan.'],['Termination of Parental Rights (TPR)','A legal action that permanently ends the parental relationship. Required before adoption can proceed.'],['Adoption and Safe Families Act (ASFA)','Federal law requiring TPR if a child has been in care for 15 of the last 22 months, with exceptions.'],['Permanent Guardianship','A permanency option in which a relative or trusted adult is granted long-term legal custody of a child without terminating parental rights.'],['Case Plan Goal','The permanency goal set for a youth\'s case — for some older youth this is a permanent plan other than reunification or adoption.'],['APPLA','Another Planned Permanent Living Arrangement — a permanency goal for older youth (16+) used only when reunification, adoption, and guardianship have all been ruled out.']],
+    who:[['Judge','Makes all permanency determinations'],['GAL','Files detailed report; advocates for child\'s stated wishes'],['Children\'s Legal Services','Presents the state\'s recommendation'],['Birth Parent + Attorney','May consent or contest the permanency recommendation'],['CBC Case Manager','Reports on status and permanency recommendation'],['Foster Family','Have the right to be heard; may be considered as adoptive resource'],['Child / Youth (14+)','Has the right and is encouraged to address the court']],
+    orgs:[['Florida Guardian ad Litem — Circuit 13','813-272-5110'],['Florida Guardian ad Litem — Circuit 6','727-464-6528'],['Children\'s Network of Hillsborough (CNHC)','CBC lead · Hillsborough'],['Family Support Services of Suncoast','CBC lead · Pinellas & Pasco'],['Heart Gallery of Tampa','Adoption recruitment and awareness · Hillsborough'],['Florida\'s Children First','Independent advocacy · statewide'],['Florida Youth SHINE','Youth voice and peer advocacy · statewide']]},
+
+  // Child stops
+  c1:{line:'child',lineName:'The Child',stopNum:'Stop 2 of 9',title:'A Knock at the Door',
+    description:'After a report is accepted, a Child Protective Investigator must make contact no later than 24 hours. They come to the home to speak with the child, the parents, and others who know the family. Their job is to determine whether the child is safe.',
+    voice:'Someone may ask to speak with you alone. You are allowed to tell them the truth about what your life at home is like. You will not get in trouble for being honest.',
+    voiceLabel:'What This Means for the Child',
+    keyTerms:[['Child Protective Investigator (CPI)','A Florida DCF investigator. Since 2023, DCF has conducted child protective investigations in all 67 counties; the Hillsborough, Pinellas, and Pasco sheriff\'s offices no longer perform this role.'],['Verified','Finding when evidence supports that abuse, neglect, or abandonment occurred.'],['Not Substantiated','Some evidence exists, but not enough credible, verifiable proof — under state law or policy — to legally establish that abuse or neglect occurred.'],['No Indicators','No credible evidence found. Case typically closed.']],
+    tips:['High-risk cases require an immediate response — the CPI may arrive the same day.','Not every investigation results in removal — most children remain home with support services.','Investigative findings are reviewed by a supervisor (a "second-party review"), so no single person decides a case alone.'],
+    who:[['Child Protective Investigator (CPI)','A DCF investigator; conducts the investigation and makes the safety determination'],['Law Enforcement','May accompany the CPI in high-risk situations'],['Child','May be interviewed separately, without parents present']],
+    orgs:[['Florida DCF — Child Protective Investigations','Conducts investigations in all three counties'],['Mary Lee\'s House','Child Advocacy Center · Hillsborough'],['Pasco Kids First','Child Advocacy Center · Pasco'],['Suncoast Center — Pinellas Children\'s Advocacy','Pinellas'],['USF Child Protection Team','Medical evaluation · tri-county'],['Children’s Advocacy Center – 13th Judicial Circuit (at Mary Lee’s House)','Child advocacy · Hillsborough']]},
+
+  c3:{line:'child',lineName:'The Child',stopNum:'Stop 5 of 9',title:'Meeting My Case Manager',
+    description:'Once in care, a Case Manager from the CBC lead agency is assigned. This person becomes one of the most important figures in the child\'s life — coordinating services, making monthly visits, communicating with the court, and working toward permanency.',
+    voice:'This person is supposed to check on you at least once a month. They want to know how school is going, how you\'re feeling, and what you need. You have a voice — use it.',
+    voiceLabel:'What This Means for the Child',
+    keyTerms:[['Case Manager (CM)','Coordinates all aspects of the child\'s case — placement, services, court updates, and family contact.'],['Case Plan','A formal court document outlining what must happen for the child to safely return home or reach another permanent outcome.'],['Case Management Organization (CMO)','An agency contracted by the CBC lead to employ case managers and manage children\'s cases day to day.']],
+    tips:['You have the right to know your case manager\'s name and contact information.','Your GAL is separate from your case manager. Both are on your team.'],
+    askBring:['Ask: What is my case plan goal right now?','Ask: When is my next court date?','Ask: Can I have your phone number and your supervisor\'s name?'],
+    orgs:[['Children\'s Network of Hillsborough (CNHC)','Assigns and supervises case managers · Hillsborough'],['Family Support Services of Suncoast','Assigns and supervises case managers · Pinellas & Pasco'],['Camelot Community Care','CBC contracted case management · multi-county'],['Gulf Coast Jewish Family & Community Services','Case management organization · tri-county'],['One Hope United','Case management organization · Florida'],['Thompson Child & Family Focus','Case management organization · multi-state incl. FL'],['Lutheran Services Florida','Case management organization · statewide'],['Healthy Start Coalition of Pasco, Inc.','Prevention & family support · Pasco'],['Homeless Leadership Alliance of Pinellas','Housing & placement · Pinellas'],['ReachUP, Inc. – Healthy Start (Home Visiting)','Prevention & home visiting · Hillsborough']]},
+
+  c4:{line:'child',lineName:'The Child',stopNum:'Stop 6 of 9',title:'My Team & Visits',
+    description:'Once placed, the child is surrounded by a team: a case manager, a GAL, often a therapist, sometimes a tutor or education liaison. Meanwhile, visits with birth parents and siblings continue — and for many children, visits are the most emotionally loaded part of the experience.',
+    voice:'You have more people on your team than you might realize. And seeing your family might feel wonderful, confusing, painful, or all three at once. Both are normal. Talk to your therapist or GAL about all of it.',
+    voiceLabel:'What This Means for the Child',
+    keyTerms:[['Guardian ad Litem (GAL)','Court-appointed advocate for the child\'s best interests — independent of both the state and the parents.'],['Supervised Visitation','Visits observed by a trained professional who documents what they see.'],['Sibling Visitation','If siblings are placed separately, they have the right to regular visits with each other.'],['Licensing Specialist','The worker who licenses and supports the foster home — a resource for the caregiver and part of the child\'s wider team.']],
+    who:[['Case Manager','Coordinates the child\'s services, visits at least monthly, and reports to the court'],['Guardian ad Litem (GAL)','Court-appointed advocate for the child\'s best interests'],['Therapist','Supports the child\'s emotional and behavioral wellbeing'],['Licensing Specialist','Licenses and supports the foster home; a resource for the caregiver and the child\'s team']],
+    tips:['Children in foster care have the right to participate in age-appropriate activities.','If a child doesn\'t feel comfortable with their therapist, they can ask for a different one.','A child\'s feelings about visits should be communicated to their therapist and GAL.'],
+    orgs:[['Florida Guardian ad Litem — Circuit 13','813-272-5110'],['Florida Guardian ad Litem — Circuit 6','727-464-6528'],['Center for Attachment & Trauma LLC','Therapeutic visitation · Hillsborough'],['Success 4 Kids & Families','Behavioral health support · Hillsborough'],['Directions for Living','Integrated behavioral health · Pinellas'],['Fostering Hearts Florida','Education support and tutoring · Tampa Bay'],['Children\'s Network of Hillsborough (CNHC)','Case management · Hillsborough'],['Family Support Services of Suncoast','Case management · Pinellas & Pasco'],['Adapt & Transform Behavior, LLC','Behavioral health · Hillsborough'],['Adoption Choices of Florida','Adoption · Hillsborough'],['Adoption Related Services of Pinellas (Family Enrichment Services)','Foster & adoption · tri-county'],['Affordable Counseling by Susan McMillan','Behavioral health · Hillsborough'],['Aspire Health Partners','Behavioral health · statewide'],['Bay Area Behavioral Services','Behavioral health · Hillsborough'],['Bay Area Neuropsychology  LLC','Behavioral health · Hillsborough'],['BayCare Behavioral Health','Behavioral health'],['Behavior Analysis & Therapy (BAIT)','Behavioral health'],['Bethel Community Foundation, Inc.','Prevention & family support · Pinellas'],['Big Brothers Big Sisters of Tampa Bay','Education & mentoring'],['Boley Centers, Inc.','Housing & placement · Pinellas'],['Boys & Girls Clubs of Greater Tampa Bay','Education & mentoring · tri-county'],['Bridging Freedom','Community & support'],['Central Florida Behavioral Health Network, Inc.','Behavioral health · tri-county'],['Children’s Advocacy Center Foundation of Pinellas County (CACFP)','Legal & court-adjacent support · Pinellas'],['Creative Changes Counseling','Behavioral health · Hillsborough'],['Crisis Center of Tampa Bay','Behavioral health · Hillsborough'],['Crossroads For Florida Kids','Legal & advocacy · Hillsborough'],['Directions for Mental Health, Inc.  DBA: directions for living','Behavioral health · Pinellas & Pasco'],['Eleos Wellness (PEMHS)','Behavioral health · Pinellas'],['Family Center on Deafness','Disability & family support · Pinellas'],['Family Resources Inc.','Family preservation & youth services · Pinellas & Pasco'],['Frameworks of Tampa Bay','Education & mentoring · Hillsborough'],['Friends of Joshua House Foundation','Community & support · Hillsborough'],['Greater Palm River Point CDC (Palm River Family Services)','Prevention & family support · Hillsborough'],['Grow Into You Foundation','Youth transition'],['Hands Across the Bay','Community & support · tri-county'],['Hillsborough County Children\'s Services','Family preservation & youth services · Hillsborough'],['Hillsborough Education Foundation','Education & mentoring · Hillsborough'],['I Matter Too','Community support'],['Ibis Healthcare (COVE / formerly DACCO)','Behavioral health · Hillsborough'],['Madi\'s Movement','Community & support · Hillsborough'],['Man Up and Go','Family preservation & community support'],['Oasis Pregnancy Care Centers','Prevention & family support · Hillsborough & Pasco'],['PACE Center for Girls – Hillsborough','Education & behavioral health · Hillsborough'],['Pace Center for Girls – Pasco','Youth services · Pasco'],['PACE Center for Girls – Pinellas','Education & behavioral health · Pinellas'],['Pasco Family Shelter (Catholic Charities Diocese of St. Petersburg)','Housing & placement · Pasco'],['Pinellas Education Foundation','Education & mentoring · Pinellas'],['Positive Spin, Inc.','Prevention & family support · Hillsborough'],['R’Club Child Care, Inc.','Early childhood & education · Pinellas'],['Redeeming Refuge','Community & support'],['Selah Freedom','Child protection & advocacy · tri-county'],['Starting Right, Now','Youth housing & transition · Hillsborough & Pinellas'],['State Attorney – 13th Circuit (Child Welfare)','Legal & criminal justice · Hillsborough'],['State Attorney – 6th Circuit (Child Welfare)','Legal & criminal justice · Pinellas & Pasco'],['Suncoast Center, Inc.','Community & support · Pinellas'],['Sunrise of Pasco County, Inc.','Community & support · Pasco'],['Tampa Jewish Family Services','Prevention & family support · Hillsborough'],['The Life Center of the Suncoast','Community & support · Hillsborough'],['Tri-County Human Services, Inc.','Community & support · Hillsborough'],['Youth Advocate Programs, Inc. – Hillsborough','Prevention & family support · Hillsborough']]},
+
+  // FoO stops
+  f1:{line:'foo',lineName:'Family of Origin',stopNum:'Stop 3 of 10',title:'Separated',
+    description:'The child has been removed from the home and placed in temporary care. A judge has determined that the child cannot safely be in the home right now. This is not necessarily permanent — but it is serious.',
+    voice:'This is one of the most painful experiences a parent can go through. Grief, rage, shame, and fear are all normal. The parents who get their children back are almost always the ones who show up, even when it\'s the hardest thing they\'ve ever done.',
+    voiceLabel:'What This Means for You as a Parent',
+    keyTerms:[['Shelter Hearing','The first court hearing after removal. The judge decides whether the child remains in out-of-home care; the child is adjudicated and the court holds its ruling over the child throughout the case.'],['Guardian ad Litem (GAL)','Appointed to represent the child\'s best interests — independently of both you and the state.']],
+    tips:['Ask to know where your child is placed and ask about visitation immediately.','Attend every hearing, every service appointment, every visit. Presence matters.'],
+    askBring:['Ask: Where is my child placed?','Ask: When can I see my child?','Ask your attorney: What are my rights right now?'],
+    orgs:[['Children\'s Network of Hillsborough (CNHC)','CBC lead · Hillsborough'],['Family Support Services of Suncoast','CBC lead · Pinellas & Pasco'],['Bay Area Legal Services (BALS)','Free legal aid · tri-county'],['Community Law Program (CLP)','Free civil legal services · Pinellas'],['Metropolitan Ministries','Crisis support and basic needs · Hillsborough and tri-county'],['Crossroads For Florida Kids','Legal & advocacy · Hillsborough'],['FosterPower – Bay Area Legal Services','Legal · tri-county'],['Gulfcoast Legal Services','Legal · Pinellas'],['Hispanic Services Council','Prevention & family support · Hillsborough']]},
+
+  d0:{line:'diversion',lineName:'A Different Path',stopNum:'Diversion',title:'A Different Path',
+    description:'A Child Protective Investigator has looked into the report and found real concern — but instead of removing your child, the goal here is to keep your family together and safe at home. This is diversion: an in-home, non-judicial case — you are getting support, but there is no removal and no court case. It is a different path, one that strengthens and stabilizes families so children never have to leave home.',
+    voice:'Being investigated is frightening, and it can feel like removal is inevitable. It often is not. When a family is willing to accept support, the system can work to keep children right where they belong — at home. That willingness is the most important thing you bring to this moment.',
+    voiceLabel:'What This Means',
+    keyTerms:[['Diversion (In-Home Non-Judicial)','A case where a CPI has enough concern to act, but the plan is to keep the child safely at home with voluntary support — an in-home, non-judicial case, not a court-ordered removal.'],['Voluntary','Diversion services are accepted, not ordered by a judge. Participating does not by itself affect your parental rights.']],
+    orgs:[]},
+
+  d1:{line:'diversion',lineName:'A Different Path',stopNum:'A Different Path · Stop 1 of 4',title:'A Plan to Stay Together',
+    description:'You are connected with a diversion provider, and together you build an in-home safety plan. This is a plan you help create — it names the goals, the risks, and the specific support your family needs so your children can stay home safely. Which provider you work with depends on your county.',
+    voice:'A safety plan is not a list of everything you have done wrong. It is a working agreement about what will help — built with you, not handed to you. The families who do best treat it as their own.',
+    voiceLabel:'What This Means',
+    keyTerms:[['In-Home Safety Plan (Non-Judicial)','A written, co-developed plan identifying the safety actions that control danger threats while behavior change happens — so a child can remain safely at home.'],['Safety Plan vs. Case Plan','A safety plan controls immediate danger; a case plan maps the longer-term changes. In diversion, the case plan is not court-ordered.'],['In-Home Non-Judicial Case Management','Intensive, voluntary in-home services (formerly "family preservation") that keep a family together and prevent removal — without a court case.'],['In-Home Safety Monitor','A trusted person — a county employee, neighbor, or extended-family member — who helps watch over the safety plan day to day.']],
+    orgs:[['Intensive Family Services Team (IFST)','Hillsborough — CNHC diversion program; voluntary, 6–12 months'],['Safe at Home (Gulf Coast JFCS)','Hillsborough & Pasco — intensive in-home family preservation'],['Connecting Family Paths (LSF)','Pinellas — contracted diversion program'],['Adoption Related Services of Pinellas (Family Enrichment Services)','Foster & adoption · tri-county'],['Family Promise of Hillsborough County','Housing & family preservation · Hillsborough'],['Family Resources Inc.','Family preservation & youth services · Pinellas & Pasco'],['Florida Department of Juvenile Justice – Circuit 13','Juvenile justice · Hillsborough'],['Florida Department of Juvenile Justice – Circuit 6','Juvenile justice · Pinellas & Pasco'],['Hillsborough County Children\'s Services','Family preservation & youth services · Hillsborough'],['Homeless Leadership Alliance of Pinellas','Housing & placement · Pinellas'],['Man Up and Go','Family preservation & community support'],['Youth and Family Advocates, Inc.','Family preservation & youth services · tri-county']]},
+
+  d2:{line:'diversion',lineName:'A Different Path',stopNum:'A Different Path · Stop 2 of 4',title:'Getting Support',
+    description:'This is where the plan becomes real work. Depending on your family\'s needs, support may include stabilizing basic needs like housing, utilities, and food; parenting education; and behavioral health or substance use treatment. The aim is to address the root causes that brought your family to the system\'s attention.',
+    voice:'Accepting help is not a weakness — it is exactly what the plan asks of you, and it is how the concerns get resolved. Every step you complete is evidence that your children are safe with you.',
+    voiceLabel:'What This Means',
+    keyTerms:[['Wraparound Services','Coordinated support across several needs at once — practical, educational, and clinical — prioritized around the immediate needs of the family.']],
+    orgs:[['Intensive Family Services Team (IFST)','Hillsborough — coordinates wraparound services'],['Safe at Home (Gulf Coast JFCS)','Hillsborough & Pasco — in-home services and parenting support'],['Connecting Family Paths (LSF)','Pinellas — case management, parenting education, treatment referrals'],['Adoption Related Services of Pinellas (Family Enrichment Services)','Foster & adoption · tri-county'],['ALPHA House of Pinellas County','Housing & placement · Pinellas'],['Aspire Health Partners','Behavioral health · statewide'],['Boley Centers, Inc.','Housing & placement · Pinellas'],['Dawning Family Services (formerly Alpha House of Tampa)','Housing & placement · Hillsborough'],['Daystar Life','Community & support · Pinellas'],['Family Promise of Hillsborough County','Housing & family preservation · Hillsborough'],['Family Resources Inc.','Family preservation & youth services · Pinellas & Pasco'],['Florida Department of Health in Pinellas County – Nurse-Family Partnership','Prevention & home visiting · Pinellas'],['Florida Department of Juvenile Justice – Circuit 13','Juvenile justice · Hillsborough'],['Florida Department of Juvenile Justice – Circuit 6','Juvenile justice · Pinellas & Pasco'],['Healthy Families Pasco/Hernando','Prevention & family support · Pasco'],['Healthy Families Pinellas','Prevention & family support · Pinellas'],['Healthy Start Coalition of Hillsborough County','Community & support · Hillsborough'],['Healthy Start Coalition of Pasco, Inc.','Prevention & family support · Pasco'],['Healthy Start Coalition of Pinellas County','Prevention & home visiting · Pinellas'],['Hillsborough County Children\'s Services','Family preservation & youth services · Hillsborough'],['Hispanic Services Council','Prevention & family support · Hillsborough'],['Homeless Leadership Alliance of Pinellas','Housing & placement · Pinellas'],['Hope Villages of America','Housing & placement · Pinellas'],['Ibis Healthcare (COVE / formerly DACCO)','Behavioral health · Hillsborough'],['Just Initiative','Housing & placement · Hillsborough'],['Keys to Independence – FLITE Center','Youth services · tri-county'],['Man Up and Go','Family preservation & community support'],['OASIS Opportunities','Community & support · Hillsborough'],['Pasco Family Shelter (Catholic Charities Diocese of St. Petersburg)','Housing & placement · Pasco'],['Pinellas Hope (Catholic Charities)','Housing & placement · Pinellas'],['Pinellas Safe Harbor (Pinellas County Sheriff\'s Office)','Housing & placement · Pinellas'],['ReachUP, Inc. – Healthy Start (Home Visiting)','Prevention & home visiting · Hillsborough'],['St. Vincent de Paul – St. Petersburg','Housing & community support · Pinellas'],['Starting Right, Now','Youth housing & transition · Hillsborough & Pinellas'],['Tampa Hillsborough Homeless Initiative (THHI)','Housing & placement · Hillsborough'],['The Coalition for the Homeless of Pasco County','Housing & placement · Pasco'],['The Salvation Army St. Petersburg (Emergency Shelter & Services)','Housing & placement · Pinellas'],['Tri-County Human Services, Inc.','Community & support · Hillsborough'],['Youth and Family Advocates, Inc.','Family preservation & youth services · tri-county']]},
+
+  d3:{line:'diversion',lineName:'A Different Path',stopNum:'A Different Path · Stop 3 of 4',title:'Checking In, Holding Steady',
+    description:'Your provider makes regular home visits and safety check-ins to confirm things are holding steady. If you need temporary relief — a short, voluntary break without a formal removal — Safe Families for Children can host your child for a short time (on average about a month) while you stabilize, with most children returning home.',
+    voice:'Consistency is what the system is watching for now. Showing up, staying engaged, and asking for help before a crisis are all signs of a family holding steady. Voluntary hosting is a tool, not a failure — reaching for it early can keep a hard week from becoming something worse.',
+    voiceLabel:'What This Means',
+    keyTerms:[['Safety Check-In','A regular home visit by a Safety Manager or case manager to confirm the safety plan is working.'],['Voluntary Hosting','A short, parent-initiated arrangement where a trained family cares for a child temporarily — no removal, no loss of rights.']],
+    orgs:[['Safe Families for Children','Voluntary child hosting, avg. ~30 days; most children return home'],['Intensive Family Services Team (IFST)','Hillsborough — ongoing safety monitoring'],['Safe at Home (Gulf Coast JFCS)','Hillsborough & Pasco — 24/7 case management and check-ins']]},
+
+  d4:{line:'diversion',lineName:'A Different Path',stopNum:'A Different Path · Stop 4 of 4',title:'Home, With Help',
+    description:'The lead agency confirms your child can remain safely home, and the diversion case closes. But closure is not the finish line — the point where families most often return to the system is the gap right after a case ends. That is why the last, most important step is a warm handoff to community: a church family-advocacy ministry, a Family Resource Center, or a parenting group — the relationships that hold your family long after the case is closed.',
+    voice:'A closed case means you did the work — and it also means the formal support ends. What lasts is the community around you. The families who stay out of the system are usually the ones who are not doing it alone. Let people in; that is not a backup plan, it is the plan.',
+    voiceLabel:'What This Means',
+    keyTerms:[['Case Closure','The lead agency verifies the child is safe at home and formally ends the diversion case.'],['Warm Handoff','A deliberate connection to lasting community support before formal services end — so the family is not left on its own.']],
+    orgs:[['Safe Families for Children','Church-based volunteer network offering ongoing relational support'],['Florida 1.27','Church family-advocacy ministries (FAMs) that walk with families long-term'],['CarePortal','Connects local churches to concrete family needs as they arise'],['Calvary Church – X150 Children (Foster Care Engagement)','Foster & adoption · Hillsborough'],['Crossover Church – Foster & Adoption Support','Community & support · Hillsborough'],['Grace Family Church – The Village (Foster & Kinship Support)','Foster & adoption · tri-county'],['Idlewild Baptist Church','Community support'],['Idlewild Foundation / Hope for the Orphan (Foster Care Support)','Foster & adoption · Hillsborough'],['Radiant Church – Foster Care Ministry','Community & support · Hillsborough & Pasco']]},
+
+  f2:{line:'foo',lineName:'Family of Origin',stopNum:'Stop 5 of 10',title:'Given a Roadmap',
+    description:'Following the shelter hearing and adjudication, a Case Plan is developed — a formal, court-approved document outlining exactly what must be done to have the child returned home. Think of it as a contract between you and the court.',
+    voice:'The case plan is your roadmap. It may ask hard things of you. Meeting every requirement — completely and consistently — is what reunification requires. But many parents do complete their case plans. Use every resource available to you.',
+    voiceLabel:'What This Means for You as a Parent',
+    keyTerms:[['Case Plan','A formal court document outlining what a parent must do to have their child returned safely.'],['Conditions of Return','The specific conditions that must be met for your child to safely return home. Completing the case-plan tasks isn\'t enough on its own — the circumstances that made the home unsafe have to be resolved.']],
+    tips:['Read your case plan carefully. Ask your attorney to explain anything you don\'t understand.','Keep documentation of everything you complete.','Ask for a copy of your case plan — you are entitled to have one.'],
+    askBring:['Ask: Can I get a written copy of my case plan today?','Ask: Are there any requirements I can start on immediately?','Bring: Any documentation of services you\'ve already started.'],
+    orgs:[['Bay Area Legal Services (BALS)','Free legal aid · tri-county'],['Agency for Community Treatment Services (ACTS)','Substance use treatment · Hillsborough'],['Operation PAR','Substance use and behavioral health · Pinellas & Pasco'],['Chrysalis Health','Behavioral health · Hillsborough'],['Directions for Living','Integrated behavioral health · Pinellas'],['Aspire Health Partners','Behavioral health · statewide'],['Ibis Healthcare (COVE / formerly DACCO)','Behavioral health · Hillsborough'],['Pinellas Safe Harbor (Pinellas County Sheriff\'s Office)','Housing & placement · Pinellas'],['Tri-County Human Services, Inc.','Community & support · Hillsborough']]},
+
+  f3:{line:'foo',lineName:'Family of Origin',stopNum:'Stop 6 of 10',title:'Services Begin',
+    description:'You are now actively working your case plan. This may include substance abuse evaluation and treatment, parenting classes, domestic violence programming, mental health counseling, housing stabilization, drug testing, or other services.',
+    voice:'This is the hardest and most important phase of the entire process. You are being asked to change — and change is hard under any circumstances, let alone while grieving. The parents who do the work — all of it — are the ones the court trusts.',
+    voiceLabel:'What This Means for You as a Parent',
+    keyTerms:[['Evaluation','An assessment that determines the services and resources your family needs. Referrals require the evaluation first — it feeds the referral plan that guides the rest of your case.'],['Batterer\'s Intervention Program (BIP)','Court-ordered programming for domestic violence perpetrators. Distinct from anger management — do not substitute one for the other.'],['Drug Screening','Regular urinalysis or hair testing to demonstrate sobriety. A missed screen is typically recorded as positive.']],
+    tips:['Never miss a drug screen — a missed screen is typically recorded as positive.','If you relapse, tell your case manager. Courts respond better to honesty than discovered deception.'],
+    orgs:[['Agency for Community Treatment Services (ACTS)','Substance use treatment · Hillsborough'],['Operation PAR','Substance use and behavioral health · Pinellas & Pasco'],['The Spring of Tampa Bay','DV services and counseling · Hillsborough'],['CASA Pinellas','DV advocacy and services · Pinellas'],['Major Impact Support Services','Parenting classes, BIP, DV programming · Hillsborough'],['Healthy Families Hillsborough','Home visiting and parenting support'],['Adoption Related Services of Pinellas (Family Enrichment Services)','Foster & adoption · tri-county'],['Aspire Health Partners','Behavioral health · statewide'],['Florida Department of Health in Pinellas County – Nurse-Family Partnership','Prevention & home visiting · Pinellas'],['Gulfcoast Legal Services','Legal · Pinellas'],['Healthy Families Pasco/Hernando','Prevention & family support · Pasco'],['Healthy Families Pinellas','Prevention & family support · Pinellas'],['Healthy Start Coalition of Hillsborough County','Community & support · Hillsborough'],['Healthy Start Coalition of Pasco, Inc.','Prevention & family support · Pasco'],['Healthy Start Coalition of Pinellas County','Prevention & home visiting · Pinellas'],['Hispanic Services Council','Prevention & family support · Hillsborough'],['Hope Villages of America','Housing & placement · Pinellas'],['Ibis Healthcare (COVE / formerly DACCO)','Behavioral health · Hillsborough'],['Man Up and Go','Family preservation & community support'],['Pinellas Safe Harbor (Pinellas County Sheriff\'s Office)','Housing & placement · Pinellas'],['ReachUP, Inc. – Healthy Start (Home Visiting)','Prevention & home visiting · Hillsborough'],['Sunrise of Pasco County, Inc.','Community & support · Pasco'],['Tri-County Human Services, Inc.','Community & support · Hillsborough']]},
+
+  f4:{line:'foo',lineName:'Family of Origin',stopNum:'Stop 7 of 10',title:'Visitation & Making Progress',
+    description:'Unless a judge orders otherwise, you have the right to visit your child while they are in foster care. Visits are one of the most important factors the court considers. Meanwhile, between court dates, you are being assessed for the behavioral changes that would allow your child to return safely — this is your opportunity to make the changes that make it possible for your child to come home.',
+    voice:'Visits are not just time with your child — they are observed, documented, and reported. Put your phone away. Focus on your child. Be the parent you want the court to see you becoming. And remember: this is the window to change the trajectory of this case.',
+    voiceLabel:'What This Means for You as a Parent',
+    keyTerms:[['Supervised Visitation','Visits observed by a trained professional who documents what they see.'],['Missed Visit','A visit you do not attend. Each missed visit is documented and reported to the judge.'],['Conditions of Return','The specific conditions that must be met for your child to safely return home. Completing the case-plan tasks isn\'t enough on its own — the circumstances that made the home unsafe have to be resolved.']],
+    tips:['Never miss a scheduled visit — your child is counting on you.','If you\'ve missed services, get back in immediately and document why.','Housing stability, employment, and sobriety are the three things courts most consistently want to see.'],
+    orgs:[['Center for Attachment & Trauma LLC','Therapeutic visitation · Hillsborough'],['Gulf Coast Jewish Family & Community Services','Family support and visitation · tri-county'],['Metropolitan Ministries','Housing and basic needs · Hillsborough and tri-county'],['Homeless Emergency Project (HEP)','Rapid rehousing · Pinellas'],['New Life Village','Family stabilization · Hillsborough'],['ALPHA House of Pinellas County','Housing & placement · Pinellas'],['Boley Centers, Inc.','Housing & placement · Pinellas'],['Dawning Family Services (formerly Alpha House of Tampa)','Housing & placement · Hillsborough'],['Daystar Life','Community & support · Pinellas'],['Family Promise of Hillsborough County','Housing & family preservation · Hillsborough'],['Homeless Leadership Alliance of Pinellas','Housing & placement · Pinellas'],['Hope Villages of America','Housing & placement · Pinellas'],['Just Initiative','Housing & placement · Hillsborough'],['Keys to Independence – FLITE Center','Youth services · tri-county'],['OASIS Opportunities','Community & support · Hillsborough'],['Pasco Family Shelter (Catholic Charities Diocese of St. Petersburg)','Housing & placement · Pasco'],['Pinellas Hope (Catholic Charities)','Housing & placement · Pinellas'],['Pinellas Safe Harbor (Pinellas County Sheriff\'s Office)','Housing & placement · Pinellas'],['St. Vincent de Paul – St. Petersburg','Housing & community support · Pinellas'],['Starting Right, Now','Youth housing & transition · Hillsborough & Pinellas'],['Tampa Hillsborough Homeless Initiative (THHI)','Housing & placement · Hillsborough'],['The Coalition for the Homeless of Pasco County','Housing & placement · Pasco'],['The Salvation Army St. Petersburg (Emergency Shelter & Services)','Housing & placement · Pinellas']]},
+
+  // TERMINUS STOPS
+  term_village:{line:'village',lineName:'Foster Family',stopNum:'Final Stop',title:'The Road Ahead — Foster Family',
+    description:'This is the end of the Foster Family\'s journey on this map — but not the end of the story. Based on what happened at the Permanency Hearing, one of three destinations awaits.',
+    voice:'Whatever happens at this hearing, you did not waste your time or your love. Every consistent meal, every school pickup, every nightmare you sat with — it all mattered to this child. Courts make legal decisions. You made a human one.',
+    voiceLabel:'What This Moment Means for Your Family',
+    keyTerms:[['Reunification Support','The child returns home to their birth family. The Foster Family\'s role transitions to supporting a smooth, loving handoff — and reunification services continue for a minimum of six months after the child goes home.'],['A New Family','You are adopting this child. What began as a temporary placement has become a permanent family.'],['Launching Well','The young person in your care is transitioning toward independence. Your role now is to launch well.']],
+    termini:[
+      {label:'Reunification Support',color:'#bbb2a7',desc:'The child you have cared for is going home to their birth family. Your grief is real. So is your hope. The most powerful thing you can do now is make the transition as safe and loving as possible. Some foster families maintain relationships with children after reunification — that connection can be a lifelong gift.',orgs:'Children\'s Network of Hillsborough · Family Support Services · Hillsborough County Family Partnership Alliance · Fostering Hope Florida · Faith community partners'},
+      {label:'A New Family',color:'#bbb2a7',desc:'You are adopting this child. Adoption does not erase a child\'s history. It adds to it. You are not replacing what was lost — you are building what comes next. There is deep joy in this. There is also hard work ahead.',orgs:'Heart of Adoptions · Family Enrichment Services · Forever Home Foundation · Heart Gallery of Tampa · Selfless Love Foundation · Camelot Community Care · Sylvia Thomas Center · Adoption Choices of Florida · Adoption Related Services of Pinellas (Family Enrichment Services) · Calvary Church – X150 Children (Foster Care Engagement) · Crossover Church – Foster & Adoption Support · Gift of Life Adoptions · Grace Family Church – The Village (Foster & Kinship Support) · Heart Gallery (Pinellas & Pasco) – Gulf Coast JFCS · Idlewild Baptist Church · Idlewild Foundation / Hope for the Orphan (Foster Care Support) · Loving Children · Man Up and Go · One Church One Child of Florida · Radiant Church – Foster Care Ministry · Tampa Bay Foster Care and Adoption Alliance · Youth and Family Advocates, Inc.'},
+      {label:'Launching Well',color:'#bbb2a7',desc:'The young person in your care is transitioning toward independence. Young people who age out with even one stable adult relationship have dramatically better outcomes. Be that person. Stay in touch. You matter more than you know.',orgs:'Ready for Life (Pinellas) · Forgotten Angels Florida · SailFuture · Florida Youth SHINE · Bay Area Youth Services · CarePortal · Better Together · Camelot Community Care · Big Brothers Big Sisters of Tampa Bay · Boley Centers, Inc. · Boys & Girls Clubs of Greater Tampa Bay · Disability Rights Florida · Grow Into You Foundation · Hands Across the Bay · Hero To A Child · InterCultural Advocacy Institute (Hispanic Outreach Center) · Keys to Independence – FLITE Center · Madi\'s Movement · PACE Center for Girls – Hillsborough · PACE Center for Girls – Pinellas · Redeeming Refuge · Starting Right, Now · Faith community partners'},
+    ]},
+
+  term_child:{line:'child',lineName:'The Child',stopNum:'Final Stop',title:'The Road Ahead — The Child',
+    description:'This is the end of The Child\'s journey on this map. Based on what happened at the Permanency Hearing, one of three destinations awaits.',
+    voice:'You have been through something most people never will. You are stronger than you know. Whatever comes next — going home, a new family, or stepping into independence — you get to keep writing your own story.',
+    voiceLabel:'What This Moment Means for the Child',
+    keyTerms:[['Returning Home','The court determines the birth parent has met their case plan and it is safe for you to return home.'],['A New Family','When reunification is not possible and parental rights have been terminated, adoption provides a permanent family.'],['Moving Toward Independence','When a youth turns 18 without a permanent family, they may remain in extended foster care until age 21 while in school or a vocational program.']],
+    termini:[
+      {label:'Returning Home',color:'#b7e0d5',desc:'The court has determined that your parent has done the work, your home is safe, and you belong together. Services will continue to support your family\'s stability. Reunification is always the primary goal when it can be safely achieved.',orgs:'Children\'s Network of Hillsborough · Family Support Services · Gulf Coast Jewish Family & Community Services · Lutheran Services Florida · Metropolitan Ministries · New Life Village · Champions for Children · Hope Children’s Home · Faith community partners'},
+      {label:'A New Family',color:'#b7e0d5',desc:'When reunification is not possible and parental rights have been terminated, adoption is the preferred permanency outcome. In many cases, the child\'s foster family becomes their adoptive family. Adoption finalizes a permanent, legal family relationship.',orgs:'Heart Gallery of Tampa · Heart of Adoptions · Family Enrichment Services · Forever Home Foundation · Gift of Adoption · Children\'s Network of Hillsborough · Family Support Services · Adoption Choices of Florida · Adoption Related Services of Pinellas (Family Enrichment Services) · Calvary Church – X150 Children (Foster Care Engagement) · Crossover Church – Foster & Adoption Support · Gift of Life Adoptions · Grace Family Church – The Village (Foster & Kinship Support) · Heart Gallery (Pinellas & Pasco) – Gulf Coast JFCS · Idlewild Baptist Church · Idlewild Foundation / Hope for the Orphan (Foster Care Support) · Loving Children · Man Up and Go · One Church One Child of Florida · Radiant Church – Foster Care Ministry · Tampa Bay Foster Care and Adoption Alliance · Youth and Family Advocates, Inc. · Faith community partners'},
+      {label:'Moving Toward Independence',color:'#b7e0d5',desc:'When a child turns 18 without a permanent family, they have the option to remain in extended foster care until age 21 while attending school or a vocational program. This is not the ideal outcome — but it is not the end of the story. Support exists, and connection is possible.',orgs:'Ready for Life (Pinellas) · Forgotten Angels Florida · Sylvia Thomas Center · SailFuture · Florida Youth SHINE · Bay Area Youth Services · CarePortal · Better Together · Safe & Sound Hillsborough · Big Brothers Big Sisters of Tampa Bay · Boley Centers, Inc. · Boys & Girls Clubs of Greater Tampa Bay · Disability Rights Florida · Grow Into You Foundation · Hands Across the Bay · Hero To A Child · InterCultural Advocacy Institute (Hispanic Outreach Center) · Keys to Independence – FLITE Center · Madi\'s Movement · PACE Center for Girls – Hillsborough · PACE Center for Girls – Pinellas · Redeeming Refuge · Starting Right, Now · Faith community partners'},
+    ]},
+
+  term_foo:{line:'foo',lineName:'Family of Origin',stopNum:'Final Stop',title:'The Road Ahead — Family of Origin',
+    description:'This is the end of the Family of Origin\'s journey on this map. Based on what happened at the Permanency Hearing, one of three destinations awaits.',
+    voice:'Whatever the court has decided, you are still a parent. Your child still has a history with you, a connection to you. Whether the outcome is reunification, TPR, or guardianship — neither outcome is the end of your story.',
+    voiceLabel:'What This Moment Means for You',
+    keyTerms:[['Returning Home','Your child is coming back. Reunification has been ordered — the court has determined you have done the work and your home is safe.'],['Letting Go','Your parental rights have been terminated. This is one of the most devastating legal outcomes a parent can experience.'],['Kinship / Permanent Guardianship','Your child has been placed permanently with a relative or trusted adult. Parental rights have not been terminated.']],
+    termini:[
+      {label:'Returning Home',color:'#f6957a',desc:'Your child is coming back. Reunification has been ordered — the court has determined you have done the work, your home is safe, and your child belongs with you. Reunification services continue for a minimum of six months after your child comes home. Use them.',orgs:'Children\'s Network of Hillsborough · Family Support Services · Gulf Coast Jewish Family & Community Services · Lutheran Services Florida · Metropolitan Ministries · New Life Village · Champions for Children · Hope Children’s Home · Faith community partners'},
+      {label:'Letting Go',color:'#f6957a',desc:'Your parental rights have been terminated. The grief that comes with this is real and legitimate. You are not less of a person. You are not beyond help or healing. Many parents go on to rebuild their lives, become advocates, and make meaning out of what they went through. Seek support. Do not disappear.',orgs:'Bay Area Legal Services · Community Law Program · Metropolitan Ministries · Agency for Community Treatment Services · Operation PAR · Chrysalis Health · Directions for Living · Faith community partners'},
+      {label:'Kinship / Permanent Guardianship',color:'#f6957a',desc:'Your child has been placed permanently with a relative or trusted adult. Parental rights have not been terminated — you may still have some contact, depending on what the court has ordered. Your child is connected to family and to their history.',orgs:'Children\'s Home Network — Kinship Navigation Program · Family Enrichment Center (FEC) · Children\'s Network of Hillsborough · Family Support Services · Gulf Coast Jewish Family & Community Services · Grace Family Church – The Village (Foster & Kinship Support) · Idlewild Foundation / Hope for the Orphan (Foster Care Support) · Faith community partners'},
+    ]},
+
+  // ═══ ADOPTION LINE STOPS ═══
+  a1:{line:'adopt',lineName:'Adoption',stopNum:'Stop 1 of 8',title:'Choosing Adoption',
+    description:'You are entering the system knowing you hope to adopt. In foster-care adoption, most children become available only after their case goal changes from reunification to adoption — so this path runs alongside fostering rather than apart from it. Many families are licensed to foster and approved to adopt at the same time.',
+    voice:'Choosing adoption is not choosing a shortcut. The children who need adoptive families have usually already lost one. Coming in with open eyes — and an open heart about who that child might be — is the most important thing you bring.',
+    voiceLabel:'What This Means for Your Family',
+    keyTerms:[['Waiting Children','Children in foster care whose plan is adoption and who are waiting for a permanent family — often older youth, sibling groups, and children with higher needs.'],['Concurrent Planning','Working toward reunification and a backup permanency plan (such as adoption) at the same time, so a child does not wait longer than necessary.'],['Adoption vs. Foster Licensing','Fostering and adopting are approved through overlapping but distinct processes; many families hold both.']],
+    tips:['Learn about the children actually waiting locally — their ages and needs may reshape your expectations.','Fostering first is one of the most common paths to adoption; ask about being dually approved.'],
+    orgs:[['Heart Gallery of Tampa','Photolisting & recruitment of waiting children · Hillsborough'],['Selfless Love Foundation','Adoption support & advocacy · statewide'],['Children\'s Network of Hillsborough (CNHC)','CBC lead · Hillsborough'],['Family Support Services of Suncoast','CBC lead · Pinellas & Pasco'],['Heart Gallery (Pinellas & Pasco) – Gulf Coast JFCS','Foster care & adoption · Pinellas & Pasco']]},
+
+  a2:{line:'adopt',lineName:'Adoption',stopNum:'Stop 2 of 8',title:'Approved to Adopt',
+    description:'You complete the same pre-service training and home study required to foster, assessed this time toward an adoptive home approval. The result is a favorable recommendation that your family is ready to adopt.',
+    voice:'The paperwork and the home study can feel endless. They exist to make sure a child who has already been through too much lands somewhere safe and prepared. Being thorough now is a gift to the child who comes later.',
+    voiceLabel:'What This Means for Your Family',
+    keyTerms:[['Adoptive Home Study','A comprehensive assessment of your household\'s readiness to adopt — overlapping with the foster home study but focused on permanency.'],['Pre-Service Curriculum','The same DCF state-approved training foster families complete (CNHC uses PRIDE; FSS uses PRIDE/NTDC).'],['Background Check','Criminal and child-welfare screenings for all adults in the home.']],
+    orgs:[['Children\'s Network of Hillsborough (CNHC)','Adoptive licensing & home study · Hillsborough'],['Family Support Services of Suncoast','Adoptive licensing & home study · Pinellas & Pasco'],['Family Enrichment Services','Adoption home studies & support · Pinellas'],['Camelot Adoption Services','Adoption services · multiple FL']]},
+
+  a3:{line:'adopt',lineName:'Adoption',stopNum:'Stop 3 of 8',title:'The Match',
+    description:'You are matched with a waiting child or sibling group through a matching staffing, where the team weighs a specific child\'s needs and history against what your family can offer. A good match is about fit, not just availability.',
+    voice:'A match is a beginning, not a guarantee. It is normal to feel both excitement and fear. Ask every question you have about the child\'s history and needs — a well-informed yes is far stronger than a hopeful one.',
+    voiceLabel:'What This Means for Your Family',
+    keyTerms:[['Matching Staffing','A meeting where the child\'s team and the prospective adoptive family consider whether a placement is the right fit.'],['Child-Specific Recruitment','Finding the right family for a particular waiting child, rather than a child for a family.'],['Sibling Group','Brothers and sisters placed together whenever possible — keeping siblings together is a priority.']],
+    orgs:[['Heart Gallery of Tampa','Waiting-child recruitment · Hillsborough'],['Heart of Adoptions','Licensed child-placing agency · Tampa Bay'],['Forever Home Foundation','Adoption support · Tampa Bay'],['Children\'s Network of Hillsborough (CNHC)','Matching & placement · Hillsborough'],['Family Support Services of Suncoast','Matching & placement · Pinellas & Pasco'],['Heart Gallery (Pinellas & Pasco) – Gulf Coast JFCS','Foster care & adoption · Pinellas & Pasco']]},
+
+  a4:{line:'adopt',lineName:'Adoption',stopNum:'Stop 4 of 8',title:'Getting to Know Each Other',
+    description:'Before a child moves in, there is a transition — phone or video calls, short visits, then longer ones and overnights. The pace is set by the child\'s needs, not the calendar.',
+    voice:'Transitions can be bumpy, and that is not a bad sign. A child testing whether you will stay is a child who has learned that adults sometimes don\'t. Steadiness, not perfection, is what builds trust.',
+    voiceLabel:'What This Means for Your Family',
+    keyTerms:[['Pre-Placement Visits','A planned series of visits that gradually introduce a child to their prospective adoptive home.'],['Transition Plan','A paced, child-centered plan for moving a child into a new home with the least possible disruption.']],
+    orgs:[['Center for Attachment & Trauma LLC','Trauma-informed transition support · Hillsborough'],['Children\'s Network of Hillsborough (CNHC)','Transition coordination · Hillsborough'],['Family Support Services of Suncoast','Transition coordination · Pinellas & Pasco']]},
+
+  a5:{line:'adopt',lineName:'Adoption',stopNum:'Stop 5 of 8',title:'Placement',
+    description:'The child moves in and the adoptive placement period begins. Legally you are not yet the parent, but day to day, you are. If the adoption is not yet legally final, this may be an at-risk placement.',
+    voice:'The first weeks are rarely the honeymoon people imagine. Keep life small and predictable. The goal right now is not to make up for lost time — it is to become safe, familiar, and reliably present.',
+    voiceLabel:'What This Means for Your Family',
+    keyTerms:[['Adoptive Placement','The period when a child lives in the adoptive home before the adoption is finalized.'],['At-Risk Placement','A placement made before parental rights are fully terminated — meaning a small chance the plan could still change.']],
+    orgs:[['Children\'s Network of Hillsborough (CNHC)','Placement support · Hillsborough'],['Family Support Services of Suncoast','Placement support · Pinellas & Pasco'],['Fostering Hope Florida','Family support at placement · Pinellas & Pasco']]},
+
+  a6:{line:'adopt',lineName:'Adoption',stopNum:'Stop 6 of 8',title:'Supervised Placement',
+    description:'A case manager supervises the placement — in Florida, generally for at least 90 days — with regular visits to confirm the placement is stable and right for the child before the adoption can be finalized.',
+    voice:'This season can feel like being watched. It is really the system making sure this child never has to move again. Lean on your worker; the families who ask for help during supervision are the ones who thrive after it.',
+    voiceLabel:'What This Means for Your Family',
+    keyTerms:[['Post-Placement Supervision','The monitoring period (generally 90+ days in Florida) between placement and finalization.'],['Adoption Subsidy','Ongoing financial and medical support available for many children adopted from foster care, especially those with higher needs.']],
+    orgs:[['Children\'s Network of Hillsborough (CNHC)','Post-placement supervision · Hillsborough'],['Family Support Services of Suncoast','Post-placement supervision · Pinellas & Pasco'],['Gift of Adoption','Adoption-finalization assistance grants · national']]},
+
+  a7:{line:'adopt',lineName:'Adoption',stopNum:'Stop 7 of 8',title:'Finalization',
+    description:'A judge grants the adoption. A new birth certificate is issued, and your parental rights become permanent. This is the day the family becomes legally — and forever — yours.',
+    voice:'Finalization day is worth celebrating loudly. It is also not the end of the work. Adoption joins a child\'s past to their future; the days after the courtroom are where that story keeps being written.',
+    voiceLabel:'What This Means for Your Family',
+    keyTerms:[['Final Judgment of Adoption','The court order that legally completes the adoption and makes you the child\'s permanent parent.'],['Adoption Decree','The signed judgment finalizing the adoption; a new birth certificate follows.'],['Adoption Subsidy','An approved subsidy continues after finalization to support the child\'s ongoing needs.']],
+    orgs:[['Heart of Adoptions','Finalization services · Tampa Bay'],['Family Enrichment Services','Adoption finalization & support · Pinellas'],['Bay Area Legal Services (BALS)','Legal support · tri-county']]},
+
+  term_adopt:{line:'adopt',lineName:'Adoption',stopNum:'Final Stop',title:'A Forever Family',
+    description:'The adoption is permanent — but support continues. Adoption-competent therapy, peer community, and (for many children) an adoption subsidy matter for years, not months. A forever family is built long after the courtroom.',
+    voice:'You did not replace what this child lost; you added to it. There will be hard days ahead, and seasons where the past resurfaces. Staying connected to other adoptive families and to adoption-competent support is how the "forever" holds.',
+    voiceLabel:'What This Moment Means for Your Family',
+    keyTerms:[['Post-Adoption Support','Counseling, respite, support groups, and subsidy that continue after finalization.'],['Adoption-Competent Therapy','Mental-health care from clinicians trained specifically in adoption, attachment, and trauma.']],
+    orgs:[['Sylvia Thomas Center','Post-adoption support & education · Hillsborough'],['Center for Attachment & Trauma LLC','Adoption-competent therapy · Hillsborough'],['Selfless Love Foundation','Adoption support & advocacy · statewide'],['Forever Home Foundation','Adoptive family support · Tampa Bay'],['CarePortal','Community support connector · tri-county'],['Adoption Related Services of Pinellas (Family Enrichment Services)','Foster & adoption · tri-county']]},
+};
+
+// ─── JOURNEY DEFINITIONS ──────────────────────────────────────────────────────
+const journeys = {
+  child:{
+    color:'#b7e0d5',dark:'#2a8a76',light:'#e8f7f4',
+    name:'The Child',emoji:'',
+    subtitle:'9 stops · Returning Home · A New Family · Moving Toward Independence',
+    stops:[
+      {key:'t1',label:'The Report / The Call',section:'The Journey Begins',transfer:true},
+      {key:'c1',label:'A Knock at the Door'},
+      {key:'t2',label:'The Courtroom',transfer:true},
+      {key:'t3',label:'A New Place to Sleep',section:'In Care',transfer:true},
+      {key:'c3',label:'Meeting My Case Manager'},
+      {key:'c4',label:'My Team & Visits'},
+      {key:'t4',label:'Back to Court (6 Months)',section:'Checkpoints',transfer:true},
+      {key:'t5',label:'The Permanency Hearing (12 Months)',section:'The Decision',transfer:true},
+      {key:'term_child',label:'The Road Ahead — The Child',section:'Destinations',terminus:true},
+    ]},
+  foo:{
+    color:'#f6957a',dark:'#c04a2a',light:'#fef0ec',
+    name:'Family of Origin',emoji:'',
+    subtitle:'10 stops · Returning Home · Letting Go · Kinship / Permanent Guardianship',
+    stops:[
+      {key:'t1',label:'The Report / The Call',section:'The Journey Begins',transfer:true},
+      {key:'d0',label:'A Different Path',section:'A Fork in the Road',fork:true},
+      {key:'f1',label:'Separated',section:'If the Case Proceeds'},
+      {key:'t2',label:'The Courtroom',transfer:true},
+      {key:'f2',label:'Given a Roadmap'},
+      {key:'f3',label:'Services Begin',section:'Working the Plan'},
+      {key:'f4',label:'Visitation & Making Progress'},
+      {key:'t4',label:'Back to Court (6 Months)',section:'Checkpoints',transfer:true},
+      {key:'t5',label:'The Permanency Hearing (12 Months)',section:'The Decision',transfer:true},
+      {key:'term_foo',label:'The Road Ahead — Family of Origin',section:'Destinations',terminus:true},
+      {key:'d1',label:'A Plan to Stay Together',section:'The Diversion Path',diversion:true},
+      {key:'d2',label:'Getting Support',diversion:true},
+      {key:'d3',label:'Checking In, Holding Steady',diversion:true},
+      {key:'d4',label:'Home, With Help',diversion:true},
+    ]},
+  village:{
+    color:'#bbb2a7',dark:'#5a5048',light:'#f3f1ef',
+    name:'Foster Family',emoji:'',
+    subtitle:'15 stops · Reunification Support · A New Family · Launching Well',
+    stops:[
+      {key:'v1',label:'Something Stirs',section:'Becoming a Foster Family'},
+      {key:'v2',label:'Info Session'},
+      {key:'v3',label:'Pre-Service Training'},
+      {key:'v4',label:'The Home Study'},
+      {key:'v5',label:'Licensed'},
+      {key:'v6',label:'Ready and Waiting'},
+      {key:'t1',label:'The Report / The Call',section:'A Child Arrives',transfer:true},
+      {key:'v7',label:'A Child Arrives'},
+      {key:'t2',label:'The Courtroom',transfer:true},
+      {key:'v8',label:'Building a Team',section:'Supporting the Case'},
+      {key:'t3',label:'A New Place to Sleep',transfer:true},
+      {key:'v9',label:'The Pivot Point'},
+      {key:'t4',label:'Back to Court (6 Months)',section:'Checkpoints',transfer:true},
+      {key:'t5',label:'The Permanency Hearing (12 Months)',section:'The Decision',transfer:true},
+      {key:'term_village',label:'The Road Ahead — Foster Family',section:'Destinations',terminus:true},
+    ]},
+  adopt:{
+    color:'#C9A24B',dark:'#8A6A1E',light:'#f6efd9',
+    name:'Adoption',emoji:'',
+    subtitle:'8 stops · For families who come in planning to adopt · Ends at A Forever Family',
+    stops:[
+      {key:'a1',label:'Choosing Adoption',section:'Becoming an Adoptive Family'},
+      {key:'a2',label:'Approved to Adopt'},
+      {key:'a3',label:'The Match',section:'Finding a Child'},
+      {key:'a4',label:'Getting to Know Each Other'},
+      {key:'a5',label:'Placement',section:'Becoming a Family'},
+      {key:'a6',label:'Supervised Placement'},
+      {key:'a7',label:'Finalization'},
+      {key:'term_adopt',label:'A Forever Family',section:'Destination',terminus:true},
+    ]},
+};
+
+// ─── DRAWER ───────────────────────────────────────────────────────────────────
+function openStop(key){
+  const stop=stops[key]; if(!stop) return;
+  const lc=LC[stop.line]||LC.transfer;
+
+  document.getElementById('drawerLineTag').textContent=stop.lineName;
+  document.getElementById('drawerLineTag').style.background=lc.dark;
+  document.getElementById('drawerStopNum').textContent=stop.stopNum;
+  document.getElementById('drawerTitle').textContent=stop.title;
+
+  const trEl=document.getElementById('drawerTransfer');
+  if(stop.isTransfer){trEl.style.display='flex';document.getElementById('drawerTransferText').textContent='Lines present: '+(stop.transferLines||'');}
+  else trEl.style.display='none';
+
+  let html='';
+  html+=`<div class="content-section"><div class="section-label" style="color:${lc.dark}">● What's Happening Here</div><div class="section-body">${stop.description}</div></div>`;
+  if(stop.voice) html+=`<div class="content-section"><div class="section-label" style="color:${lc.dark}">● ${stop.voiceLabel||'What This Means'}</div><div class="voice-block">${stop.voice}</div></div>`;
+
+  if(stop.termini){
+    html+=`<div class="section-label" style="color:${lc.dark}">● Possible Destinations</div><div class="terminus-cards">`;
+    stop.termini.forEach(t=>{
+      html+=`<div class="terminus-card" style="background:${lc.light};border-color:${lc.bg}"><div class="terminus-card-title" style="color:${lc.dark}">${t.label}</div><div class="terminus-card-body">${t.desc}</div><div class="terminus-card-orgs" style="font-size:11px;color:#888;margin-top:6px">${orgLinkList(t.orgs)}</div></div>`;
+    });
+    html+='</div>';
+  } else {
+    if(stop.keyTerms&&stop.keyTerms.length){html+=`<div class="section-label" style="color:${lc.dark}">● Key Terms</div><ul class="terms-list">`;stop.keyTerms.forEach(([t,d])=>html+=`<li><strong>${t}</strong> — ${d}</li>`);html+='</ul>';}
+    if(stop.orgs&&stop.orgs.length){html+=`<div class="section-label" style="color:${lc.dark};margin-top:16px">● Organizations at This Stop</div><ul class="org-list">`;stop.orgs.forEach(([n,note])=>html+=`<li><span class="org-dot" style="background:${lc.bg}"></span><span><span class="org-name">${orgLink(n)}</span><span class="org-note">${note}</span></span></li>`);html+='</ul>';}
+    if(stop.who&&stop.who.length){html+=`<div class="section-label" style="color:${lc.dark};margin-top:14px">● Who's in the Room</div><ul class="room-list">`;stop.who.forEach(([r,d])=>html+=`<li><strong>${r}</strong> — <span style="color:#666">${d}</span></li>`);html+='</ul>';}
+    if(stop.tips&&stop.tips.length){html+=`<div class="section-label" style="color:${lc.dark};margin-top:14px">● Tips</div><ul class="tips-list">`;stop.tips.forEach(t=>html+=`<li>${t}</li>`);html+='</ul>';}
+    if(stop.askBring&&stop.askBring.length){html+=`<div class="section-label" style="color:${lc.dark};margin-top:14px">● What to Bring / What to Ask</div><ul class="tips-list">`;stop.askBring.forEach(b=>html+=`<li>${b}</li>`);html+='</ul>';}
+  }
+
+  document.getElementById('drawerBody').innerHTML=html;
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawerOverlay').classList.add('open');
+}
+
+function toggleExpand(btn){
+  const c=btn.nextElementSibling;
+  btn.textContent=c.classList.toggle('open')?'Show less ↑':'Show tips & what to ask ↓';
+}
+function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('drawerOverlay').classList.remove('open');}
+
+// ─── JOURNEY MODE ─────────────────────────────────────────────────────────────
+let currentJourney=null,currentJourneyStop=0;
+
+function enterJourney(lk){
+  const j=journeys[lk]; currentJourney=lk; currentJourneyStop=0;
+  document.getElementById('journeyBadge').textContent=j.name;
+  document.getElementById('journeyBadge').style.background=j.dark;
+  document.getElementById('journeyTitle').textContent=j.name+' Journey';
+  document.getElementById('journeySubtitle').textContent=j.subtitle;
+
+  let rail='',last=null;
+  j.stops.forEach((s,i)=>{
+    if(s.section&&s.section!==last){rail+=`<div class="rail-section-label">${s.section}</div>`;last=s.section;}
+    rail+=`<div class="rail-stop ${i===0?'active':''}" onclick="goToJourneyStop(${i})"><span class="rail-stop-num">${i+1}</span><span class="rail-stop-dot ${s.transfer?'transfer':''}" style="background:${s.transfer?'white':j.color};border-color:${j.color}"></span><span class="rail-stop-name">${s.label}</span></div>`;
+  });
+  document.getElementById('journeyRail').innerHTML=rail;
+  renderJourneyStop(0);
+  document.getElementById('journeyOverlay').classList.add('open');
+  closeDrawer();
+}
+
+function goToJourneyStop(idx){
+  currentJourneyStop=idx;
+  document.querySelectorAll('.rail-stop').forEach((el,i)=>el.classList.toggle('active',i===idx));
+  renderJourneyStop(idx);
+  document.getElementById('journeyContent').scrollTop=0;
+}
+
+function renderJourneyStop(idx){
+  const j=journeys[currentJourney];
+  const ref=j.stops[idx];
+  const stop=stops[ref.key]; if(!stop) return;
+
+  let html=`<div class="journey-stop-num">${stop.stopNum}</div><div class="journey-stop-title">${stop.title}</div>`;
+  html+=stop.isTransfer?`<div class="journey-transfer-badge">⬡ Transfer Station — ${stop.transferLines||''}</div>`:'<div style="height:12px"></div>';
+  html+='<hr class="journey-divider">';
+  html+=`<div class="journey-section-label" style="color:${j.dark}">WHAT'S HAPPENING HERE</div><div class="journey-description">${stop.description}</div>`;
+  if(stop.voice) html+=`<div class="journey-section-label" style="color:${j.dark}">${(stop.voiceLabel||'WHAT THIS MEANS').toUpperCase()}</div><div class="journey-voice">${stop.voice}</div>`;
+
+  if(stop.termini){
+    html+=`<div class="journey-section-label" style="color:${j.dark}">POSSIBLE DESTINATIONS</div><div class="terminus-cards">`;
+    stop.termini.forEach(t=>html+=`<div class="terminus-card" style="background:${j.light};border-color:${j.color}"><div class="terminus-card-title" style="color:${j.dark}">${t.label}</div><div class="terminus-card-body">${t.desc}</div><div class="terminus-card-orgs" style="font-size:11px;color:#888;margin-top:6px">${orgLinkList(t.orgs)}</div></div>`);
+    html+='</div>';
+  } else {
+    if(stop.keyTerms&&stop.keyTerms.length){html+=`<div class="journey-section-label" style="color:${j.dark}">KEY TERMS</div><ul class="terms-list" style="margin-bottom:16px">`;stop.keyTerms.forEach(([t,d])=>html+=`<li><strong>${t}</strong> — ${d}</li>`);html+='</ul>';}
+    if(stop.orgs&&stop.orgs.length){html+=`<div class="journey-section-label" style="color:${j.dark}">ORGANIZATIONS AT THIS STOP</div><ul class="org-list" style="margin-bottom:16px">`;stop.orgs.forEach(([n,note])=>html+=`<li><span class="org-dot" style="background:${j.color}"></span><span><span class="org-name">${orgLink(n)}</span><span class="org-note">${note}</span></span></li>`);html+='</ul>';}
+    if(stop.who&&stop.who.length){html+=`<div class="journey-section-label" style="color:${j.dark}">WHO'S IN THE ROOM</div><ul class="room-list" style="margin-bottom:16px">`;stop.who.forEach(([r,d])=>html+=`<li><strong>${r}</strong> — <span style="color:#666">${d}</span></li>`);html+='</ul>';}
+    if(stop.tips&&stop.tips.length){html+=`<div class="journey-section-label" style="color:${j.dark}">TIPS</div><ul class="tips-list" style="margin-bottom:16px">`;stop.tips.forEach(t=>html+=`<li>${t}</li>`);html+='</ul>';}
+    if(stop.askBring&&stop.askBring.length){html+=`<div class="journey-section-label" style="color:${j.dark}">WHAT TO BRING / WHAT TO ASK</div><ul class="tips-list" style="margin-bottom:24px">`;stop.askBring.forEach(b=>html+=`<li>${b}</li>`);html+='</ul>';}
+  }
+
+  const total=j.stops.length;
+  // ── Branch-aware navigation (Family of Origin diversion fork) ──
+  // Indices resolved dynamically from the stop list so reordering never breaks routing.
+  const forkIdx = j.stops.findIndex(x=>x.fork);
+  const divIdxs = j.stops.map((x,i)=>x.diversion?i:-1).filter(i=>i>=0);
+  const firstDiv = divIdxs.length?divIdxs[0]:-1;
+  const lastDiv  = divIdxs.length?divIdxs[divIdxs.length-1]:-1;
+  const removalIdx = (forkIdx>=0 && forkIdx+1<j.stops.length)?forkIdx+1:idx+1; // stop right after the fork
+  let prevIdx=idx-1, nextIdx=idx+1, navHtml='';
+  if(ref.fork){
+    // At the fork: offer two explicit choices instead of a single Next.
+    html+=`<div class="fork-choice">
+      <div class="fork-choice-label">This is a fork in the road. What happens next?</div>
+      <button class="fork-btn stay" onclick="goToJourneyStop(${firstDiv})">↓ Follow the diversion path <span>the family stays together</span></button>
+      <button class="fork-btn remove" onclick="goToJourneyStop(${removalIdx})">→ Continue toward removal <span>the case proceeds</span></button>
+    </div>`;
+    navHtml=`<div class="journey-nav"><button class="nav-btn" onclick="goToJourneyStop(${idx-1})">← Previous</button><button class="nav-btn" onclick="closeJourney()">Return to Map</button><span style="flex:1"></span></div>`;
+  } else if(ref.diversion){
+    // Diversion path: Prev of the first diversion stop returns to the fork; last is a complete ending.
+    prevIdx = (idx===firstDiv) ? forkIdx : idx-1;
+    const isLast = (idx===lastDiv);
+    navHtml=`<div class="journey-nav"><button class="nav-btn" onclick="goToJourneyStop(${prevIdx})">← Previous</button><button class="nav-btn" onclick="closeJourney()">Return to Map</button>`+
+      (isLast
+        ? `<button class="nav-btn primary" onclick="goToJourneyStop(${forkIdx})">↩ Back to the fork</button>`
+        : `<button class="nav-btn primary" onclick="goToJourneyStop(${idx+1})">Next →</button>`)+
+      `</div>`;
+  } else {
+    // Normal linear stop. The removal path's last real stop is term_foo — Next must NOT
+    // roll into the appended diversion stops. Also, the stop right before the first
+    // diversion stop ends the linear chain.
+    const isRemovalEnd = (ref.key==='term_foo') || (firstDiv>=0 && idx===firstDiv-1);
+    navHtml=`<div class="journey-nav"><button class="nav-btn" onclick="goToJourneyStop(${idx-1})" ${idx===0?'disabled':''}>← Previous</button><button class="nav-btn" onclick="closeJourney()">Return to Map</button>`+
+      (isRemovalEnd
+        ? `<span style="flex:1"></span>`
+        : `<button class="nav-btn primary" onclick="goToJourneyStop(${idx+1})" ${idx>=total-1?'disabled':''}>Next →</button>`)+
+      `</div>`;
+  }
+  html+=navHtml;
+  document.getElementById('journeyContent').innerHTML=html;
+}
+
+function closeJourney(){document.getElementById('journeyOverlay').classList.remove('open');currentJourney=null;}
+
+// ─── INFRA MODAL ──────────────────────────────────────────────────────────────
+function openInfraModal(){document.getElementById('infraModal').classList.add('open');}
+function closeInfraModal(e){if(!e||e.target===document.getElementById('infraModal'))document.getElementById('infraModal').classList.remove('open');}
+
+// ─── MAP DRAG ─────────────────────────────────────────────────────────────────
+const mapScroll=document.getElementById('mapScroll');
+let isDragging=false,startX=0,scrollLeft=0;
+mapScroll.addEventListener('mousedown',e=>{isDragging=true;startX=e.pageX-mapScroll.offsetLeft;scrollLeft=mapScroll.scrollLeft;mapScroll.style.cursor='grabbing';});
+mapScroll.addEventListener('mouseleave',()=>{isDragging=false;mapScroll.style.cursor='grab';});
+mapScroll.addEventListener('mouseup',()=>{isDragging=false;mapScroll.style.cursor='grab';});
+mapScroll.addEventListener('mousemove',e=>{if(!isDragging)return;e.preventDefault();mapScroll.scrollLeft=scrollLeft-(e.pageX-mapScroll.offsetLeft-startX)*1.5;});
+
+// ─── TOOLTIP ─────────────────────────────────────────────────────────────────
+const tooltip=document.getElementById('tooltip');
+document.querySelectorAll('.stop-group').forEach(g=>{
+  const key=g.dataset.stop; if(!key||!stops[key]) return;
+  g.addEventListener('mouseenter',()=>{tooltip.textContent=stops[key].title;tooltip.classList.add('visible');});
+  g.addEventListener('mousemove',e=>{tooltip.style.left=(e.clientX+12)+'px';tooltip.style.top=(e.clientY-8)+'px';});
+  g.addEventListener('mouseleave',()=>tooltip.classList.remove('visible'));
+});
+
+// ─── KEYBOARD ────────────────────────────────────────────────────────────────
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeDrawer();closeJourney();closeInfraModal();}
+  if(currentJourney&&e.key==='ArrowRight'){const j=journeys[currentJourney];if(currentJourneyStop<j.stops.length-1)goToJourneyStop(currentJourneyStop+1);}
+  if(currentJourney&&e.key==='ArrowLeft'){if(currentJourneyStop>0)goToJourneyStop(currentJourneyStop-1);}
+});
+
+
+/* ================= SEARCH ================= */
+(function(){
+  const LCV={child:{dot:'var(--child)'},foo:{dot:'var(--foo)'},village:{dot:'var(--village)'},adopt:{dot:'var(--adopt)'},transfer:{dot:'var(--teal-dark)'}};
+  // Build a flat, weighted index from the stops data.
+  const INDEX=[];
+  Object.keys(stops).forEach(key=>{
+    const st=stops[key];
+    const fields=[];
+    if(st.title) fields.push({t:'title',v:st.title});
+    if(st.description) fields.push({t:'description',v:st.description});
+    (st.keyTerms||[]).forEach(([term,def])=>{fields.push({t:'key term',v:term});fields.push({t:'key term',v:def,label:term});});
+    (st.orgs||[]).forEach(([n,note])=>{fields.push({t:'organization',v:n});if(note)fields.push({t:'organization',v:note,label:n});});
+    (st.who||[]).forEach(([r,d])=>{fields.push({t:'who\u2019s in the room',v:r});if(d)fields.push({t:'who\u2019s in the room',v:d,label:r});});
+    (st.tips||[]).forEach(tp=>fields.push({t:'tip',v:tp}));
+    INDEX.push({key,st,fields});
+  });
+
+  const input=document.getElementById('searchInput');
+  const box=document.getElementById('searchResults');
+  const clearBtn=document.getElementById('searchClear');
+  if(!input||!box) return;
+  let active=-1, current=[];
+
+  function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+  function search(q){
+    q=q.trim().toLowerCase();
+    if(q.length<2) return [];
+    const out=[];
+    INDEX.forEach(entry=>{
+      let best=null;
+      for(const f of entry.fields){
+        const hay=f.v.toLowerCase();
+        const idx=hay.indexOf(q);
+        if(idx<0) continue;
+        // rank: title match > startswith > word-boundary > substring
+        let score = (f.t==='title'?0:10) + (idx===0?0:(/\b/.test(hay[idx-1]||' ')?2:4));
+        if(f.t==='organization') score-=1;
+        if(!best||score<best.score){best={field:f,score:score,idx:idx};}
+      }
+      if(best) out.push({key:entry.key,st:entry.st,match:best});
+    });
+    out.sort((a,b)=>a.match.score-b.match.score || a.st.title.localeCompare(b.st.title));
+    return out.slice(0,10);
+  }
+
+  function whyText(m){
+    const f=m.field;
+    if(f.t==='title') return 'Stop';
+    if(f.label) return '<b>'+esc(f.t)+'</b>: '+esc(f.label);
+    return 'matched in <b>'+esc(f.t)+'</b>';
+  }
+
+  function render(results,q){
+    current=results; active=-1;
+    if(q.trim().length<2){box.classList.remove('open');box.innerHTML='';return;}
+    if(!results.length){
+      box.innerHTML='<div class="search-empty">No matches for \u201c'+esc(q)+'\u201d</div>';
+      box.classList.add('open');return;
+    }
+    box.innerHTML=results.map((r,i)=>{
+      const dot=(LCV[r.st.line]||LCV.transfer).dot;
+      return '<button class="search-result" data-i="'+i+'">'+
+        '<span class="sr-title"><span class="sr-dot" style="background:'+dot+'"></span>'+esc(r.st.title)+'</span>'+
+        '<span class="sr-why">'+whyText(r.match)+'</span></button>';
+    }).join('')+'<div class="search-hint">\u2191\u2193 to navigate \u00b7 Enter to open \u00b7 Esc to close</div>';
+    box.classList.add('open');
+    box.querySelectorAll('.search-result').forEach(btn=>{
+      btn.addEventListener('click',()=>choose(+btn.dataset.i));
+    });
+  }
+
+  function choose(i){
+    const r=current[i]; if(!r) return;
+    closeBox(); input.value=''; clearBtn.style.display='none';
+    if(typeof openStop==='function') openStop(r.key);
+  }
+  function closeBox(){box.classList.remove('open');active=-1;}
+  function highlight(){
+    const items=box.querySelectorAll('.search-result');
+    items.forEach((el,i)=>el.classList.toggle('active',i===active));
+    if(active>=0&&items[active]) items[active].scrollIntoView({block:'nearest'});
+  }
+
+  input.addEventListener('input',()=>{
+    clearBtn.style.display=input.value?'block':'none';
+    render(search(input.value),input.value);
+  });
+  input.addEventListener('keydown',e=>{
+    const items=current.length;
+    if(e.key==='ArrowDown'){e.preventDefault();if(items){active=(active+1)%items;highlight();}}
+    else if(e.key==='ArrowUp'){e.preventDefault();if(items){active=(active-1+items)%items;highlight();}}
+    else if(e.key==='Enter'){e.preventDefault();if(active>=0)choose(active);else if(items)choose(0);}
+    else if(e.key==='Escape'){input.value='';clearBtn.style.display='none';closeBox();input.blur();}
+  });
+  clearBtn.addEventListener('click',()=>{input.value='';clearBtn.style.display='none';closeBox();input.focus();});
+  document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap'))closeBox();});
+})();
+
+</script>
+</body>
+</html>
